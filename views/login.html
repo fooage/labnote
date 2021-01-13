@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <!-- Load Bootstrap and jQuery framework. -->
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/js/bootstrap.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Load custom styles and scripts. -->
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding-top: 40px;
+        padding-bottom: 40px;
+      }
+      .form-signin {
+        padding: 15px;
+        margin: 0 auto;
+        width: 100%;
+        max-width: 320px;
+      }
+      .form-control {
+        position: relative;
+        box-sizing: border-box;
+        height: auto;
+        padding: 10px;
+        font-size: 16px;
+      }
+      .form-control:focus {
+        box-shadow: none;
+        z-index: 2;
+      }
+      .btn:focus {
+        box-shadow: none;
+      }
+      input[type='email'] {
+        margin-bottom: -1px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+      input[type='password'] {
+        margin-bottom: 20px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    </style>
+    <script>
+      $(document).ready(function () {
+        $('#login').on('click', function () {
+          var formParam = $('.form-signin').serialize();
+          $.ajax({
+            url: '/login',
+            type: 'post',
+            data: formParam,
+            dataType: 'json',
+            success: function (data) {
+              if (data.pass == true) {
+                // Login successfully and jump to the homepage.
+                $('#login').removeClass('btn-danger').addClass('btn-success');
+                window.location.href = '/home';
+              } else {
+                // Change the color of the login button when the login fails.
+                $('#login').removeClass('btn-success').addClass('btn-danger');
+              }
+            },
+            error: function (data) {
+              $('#login').removeClass('btn-success').addClass('btn-danger');
+            },
+          });
+        });
+      });
+    </script>
+    <title>Login</title>
+  </head>
+  <body class="text-center">
+    <div class="container">
+      <form class="form-signin">
+        <h2 class="mb-4 font-weight-normal">Welcome!</h2>
+        <input
+          class="form-control"
+          name="email"
+          type="email"
+          placeholder="Email address"
+        />
+        <input
+          class="form-control"
+          name="password"
+          type="password"
+          placeholder="Password"
+        />
+        <button
+          id="login"
+          class="btn btn-lg btn-success btn-block"
+          type="button"
+        >
+          Sign in
+        </button>
+      </form>
+    </div>
+  </body>
+</html>
