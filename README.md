@@ -36,7 +36,7 @@ If you are not logged in, you will be redirected to the login interface. After s
 
 ## To Fix
 
-- error redirect caused by 301 cache
+- Error redirect caused by 301 cache
 
 Browsers often cache the 301 status, which leads to incorrect redirection after a successful login.
 
@@ -44,4 +44,4 @@ Browsers often cache the 301 status, which leads to incorrect redirection after 
 
 ## To Do
 
-There is lack of a register module in this website, At present, only allowed the administrator add users who is Authorized. But this is also a safer way, because the administrator is a trusted insider!
+There is lack of a register module in this website, At present, only allowed the administrator add users who is authorized. But this is also a safer way, because the administrator is a trusted insider!
