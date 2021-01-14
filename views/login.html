@@ -69,6 +69,8 @@
       $(document).ready(function () {
         $('#login').on('click', function () {
           var formParam = $('.form-signin').serialize();
+          $('#email').val('');
+          $('#password').val('');
           $.ajax({
             url: '/login',
             type: 'post',
@@ -98,12 +100,14 @@
       <form class="form-signin">
         <h2 class="mb-4 font-weight-normal">Welcome!</h2>
         <input
+          id="email"
           class="form-control"
           name="email"
           type="email"
           placeholder="Email address"
         />
         <input
+          id="password"
           class="form-control"
           name="password"
           type="password"
