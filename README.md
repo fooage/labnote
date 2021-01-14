@@ -34,6 +34,14 @@ ApplyURI("mongodb://127.0.0.1:27017")
 
 If you are not logged in, you will be redirected to the login interface. After successful login, you can write and submit note in the text area of the homepage.
 
+## To Fix
+
+- error redirect caused by 301 cache
+
+Browsers often cache the 301 status, which leads to incorrect redirection after a successful login.
+
+> Solution: `F12` >> `Network` >> `Disable cache`
+
 ## To Do
 
 There is lack of a register module in this website, At present, only allowed the administrator add users who is Authorized. But this is also a safer way, because the administrator is a trusted insider!
