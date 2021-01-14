@@ -9,16 +9,18 @@ import (
 )
 
 // VerifyAuthority is a permission authentication middleware.
-func VerifyAuthority(c *gin.Context) {
-	if cookie, err := c.Cookie("auth"); err == nil {
-		// Find if there is a matching cookie here.
-		if cookie == "true" {
-			c.Next()
-			return
+func VerifyAuthority() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if cookie, err := c.Cookie("auth"); err == nil {
+			// Find if there is a matching cookie here.
+			if cookie == "true" {
+				c.Next()
+				return
+			}
 		}
+		c.Redirect(http.StatusMovedPermanently, "/login")
+		c.Abort()
 	}
-	c.Redirect(http.StatusMovedPermanently, "/login")
-	c.Abort()
 }
 
 // GetHomePage is a handler function which response the GET request for homepage.
