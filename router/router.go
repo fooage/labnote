@@ -18,11 +18,10 @@ func InitRouter() *gin.Engine {
 	// These are handler functions of this website.
 	router.GET("/login", handler.GetLoginPage)
 	router.POST("/login", handler.PostLoginData)
-	router.Use(handler.VerifyAuthority())
 	{
-		router.GET("/home", handler.GetHomePage)
-		router.GET("/data", handler.GetNotes)
-		router.POST("/data", handler.PostNote)
+		router.GET("/home", handler.VerifyAuthority(), handler.GetHomePage)
+		router.GET("/data", handler.VerifyAuthority(), handler.GetNotes)
+		router.POST("/data", handler.VerifyAuthority(), handler.PostNote)
 	}
 	return router
 }
