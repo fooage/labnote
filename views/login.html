@@ -15,6 +15,10 @@
       rel="stylesheet"
     />
     <script
+      src="https://kit.fontawesome.com/71e3554019.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
       src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"
       crossorigin="anonymous"
     ></script>
@@ -24,18 +28,11 @@
     ></script>
     <!-- Load custom styles and scripts. -->
     <style>
-      html {
-        height: 100%;
-      }
-      body {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        padding-top: 40px;
-        padding-bottom: 40px;
+      .container {
+        margin-top: 20px;
+        margin-bottom: 40px;
       }
       .form-signin {
-        padding: 15px;
         margin: 0 auto;
         width: 100%;
         max-width: 320px;
@@ -44,33 +41,20 @@
         position: relative;
         box-sizing: border-box;
         height: auto;
+        font-family: 'Courier New', Courier, monospace;
         padding: 10px;
-        font-size: 16px;
+        font-size: 18px;
       }
+      .btn:focus,
       .form-control:focus {
         box-shadow: none;
-        z-index: 2;
-      }
-      .btn:focus {
-        box-shadow: none;
-      }
-      input[type='email'] {
-        margin-bottom: -1px;
-        border-bottom-right-radius: 0;
-        border-bottom-left-radius: 0;
-      }
-      input[type='password'] {
-        margin-bottom: 20px;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
       }
     </style>
     <script>
       $(document).ready(function () {
         $('#login').on('click', function () {
-          var formParam = $('.form-signin').serialize();
-          $('#email').val('');
-          $('#password').val('');
+          var formParam = $('#form-login').serialize();
+          $('input').val('');
           $.ajax({
             url: '/login',
             type: 'post',
@@ -97,28 +81,28 @@
   </head>
   <body class="text-center">
     <div class="container">
-      <form class="form-signin">
-        <h2 class="mb-4 font-weight-normal">Welcome!</h2>
-        <input
-          id="email"
-          class="form-control"
-          name="email"
-          type="email"
-          placeholder="Email address"
-        />
-        <input
-          id="password"
-          class="form-control"
-          name="password"
-          type="password"
-          placeholder="Password"
-        />
+      <h1 class="display-3 mb-4">Lab Note</h1>
+      <form id="form-login" class="form-signin">
+        <div class="input-group mb-4">
+          <div class="input-group-prepend">
+            <span class="input-group-text"
+              ><i class="fas fa-envelope"></i
+            ></span>
+          </div>
+          <input class="form-control" name="email" type="email" />
+        </div>
+        <div class="input-group mb-4">
+          <div class="input-group-prepend">
+            <span class="input-group-text"><i class="fas fa-key"></i></span>
+          </div>
+          <input class="form-control" name="password" type="password" />
+        </div>
         <button
           id="login"
           class="btn btn-lg btn-success btn-block"
           type="button"
         >
-          Sign in
+          <i class="fas fa-sign-in-alt"></i>
         </button>
       </form>
     </div>

@@ -15,6 +15,10 @@
       rel="stylesheet"
     />
     <script
+      src="https://kit.fontawesome.com/71e3554019.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
       src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"
       crossorigin="anonymous"
     ></script>
@@ -24,27 +28,30 @@
     ></script>
     <!-- Load custom styles and scripts. -->
     <style>
-      html {
-        height: 100%;
+      .container {
+        margin-top: 10px;
+        margin-bottom: 10px;
       }
-      body {
-        display: flex;
-        height: 100%;
+      .jumbotron {
+        background-color: white;
         padding-top: 10px;
-        padding-bottom: 10px;
+        padding-bottom: 0px;
+        margin-bottom: 0px;
+      }
+      .form-control,
+      .list-group-item {
+        font-size: 18px;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 400;
       }
       .btn:focus,
       .form-control:focus {
         box-shadow: none;
       }
-      .jumbotron {
-        padding-top: 5px;
-        padding-bottom: 20px;
-        margin-bottom: 10px;
-      }
       .list-group {
         display: block;
-        padding-bottom: 10px;
+        padding: 25px;
+        padding-top: 15px;
       }
     </style>
     <script>
@@ -54,11 +61,11 @@
         for (var i = 0; i < notes.length; i++) {
           notes[i].Time = changeDateFormat(notes[i].Time);
           var addtion =
-            '<li class="list-group-item"><div class="media"><div class="media-body"><h5 class="mt-0">' +
+            '<li class="list-group-item"><div class="media"><div class="media-body"><h6><i class="far fa-calendar-alt"></i> ' +
             notes[i].Time +
-            '</h5>' +
+            '</h6><span>' +
             notes[i].Content +
-            '</div></div></li>';
+            '</span></div></div></li>';
           // FIXME: Optimize the refresh effect of the list.
           $(addtion).prependTo('#note-list');
         }
@@ -91,17 +98,15 @@
               ? '0' + (date.getMonth() + 1)
               : date.getMonth() + 1;
           var day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
-          return date.getFullYear() + '/' + month + '/' + day;
+          return date.getFullYear() + '-' + month + '-' + day;
         }
       }
       // Load all notes when the interface is loaded.
-      $(document).ready(loadAllNotes());
       $(document).ready(function () {
         // Function to add log items to the log list.
         $('#submit').click(function () {
-          var content = $('#input').val();
-          var formParam = $('.form-input').serialize();
-          $('#input').val('');
+          var formParam = $('#form-write').serialize();
+          $('textarea').val('');
           $.ajax({
             url: '/data',
             type: 'post',
@@ -131,12 +136,12 @@
         </p>
         <hr class="my-2" />
         <p>Please write down what you want to record here.</p>
-        <form class="form-input">
+        <form id="form-write" class="form-input">
           <div class="input-group">
-            <textarea id="input" class="form-control" name="content"></textarea>
+            <textarea class="form-control" name="content"></textarea>
             <div class="input-group-append">
               <button id="submit" class="btn btn-success" type="button">
-                Submit
+                <i class="fas fa-pencil-alt"></i>
               </button>
             </div>
           </div>
