@@ -44,6 +44,7 @@
         font-size: 18px;
         font-family: 'Courier New', Courier, monospace;
         font-weight: 400;
+        resize: none;
       }
       .btn:focus,
       .form-control:focus {
@@ -140,6 +141,7 @@
         $('#submit').click(function () {
           var formParam = $('#form-write').serialize();
           $('textarea').val('');
+          $('textarea').height(24);
           $.ajax({
             url: '/data',
             type: 'post',
@@ -171,7 +173,7 @@
         <p>Please write down what you want to record here.</p>
         <form id="form-write" class="form-input">
           <div class="input-group">
-            <textarea class="form-control" name="content"></textarea>
+            <textarea class="form-control" name="content" rows="1"></textarea>
             <div class="input-group-append">
               <button id="submit" class="btn btn-success" type="button">
                 <i class="fas fa-pencil-alt"></i>
