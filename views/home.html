@@ -40,6 +40,7 @@
       }
       .form-control,
       .list-group-item {
+        white-space: pre-wrap;
         font-size: 18px;
         font-family: 'Courier New', Courier, monospace;
         font-weight: 400;
@@ -102,7 +103,39 @@
         }
       }
       // Load all notes when the interface is loaded.
+      $(document).ready(loadAllNotes());
       $(document).ready(function () {
+        // Textarea adaptive height is supported.
+        $('textarea')
+          .each(function () {
+            this.setAttribute(
+              'style',
+              'height:' + this.scrollHeight + 'px;overflow-y:hidden;'
+            );
+          })
+          .on('input', function () {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+          });
+        // Support the tab key's use in textarea.
+        $('textarea').on('keydown', function (e) {
+          if (e.keyCode == 9) {
+            e.preventDefault();
+            var indent = '    ';
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+            var selected = window.getSelection().toString();
+            selected = indent + selected.replace(/\n/g, '\n' + indent);
+            this.value =
+              this.value.substring(0, start) +
+              selected +
+              this.value.substring(end);
+            this.setSelectionRange(
+              start + indent.length,
+              start + selected.length
+            );
+          }
+        });
         // Function to add log items to the log list.
         $('#submit').click(function () {
           var formParam = $('#form-write').serialize();
