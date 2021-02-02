@@ -19,7 +19,7 @@ func VerifyAuthority() gin.HandlerFunc {
 				return
 			}
 		}
-		c.Redirect(http.StatusMovedPermanently, "/login")
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		c.Abort()
 	}
 }

@@ -13,7 +13,7 @@ func InitRouter() *gin.Engine {
 	router.LoadHTMLGlob("views/*")
 	// Set the root redirect function to the real homepage.
 	router.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/home")
+		c.Redirect(http.StatusTemporaryRedirect, "/home")
 	})
 	// These are handler functions of this website.
 	router.GET("/login", handler.GetLoginPage)
