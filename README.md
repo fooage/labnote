@@ -30,6 +30,8 @@ You can change some code in this project to achieve the IP address and port chan
 Run("127.0.0.1:8090")
 // In ./data/data.go can change the mongodb's connection info.
 ApplyURI("mongodb://127.0.0.1:27017")
+// And in ./handler/handler.go the cookies should be set to the domain of server.
+c.SetCookie("auth", "true", 3600, "/", "127.0.0.1", false, true)
 ```
 
 If you are not logged in, you will be redirected to the login interface. After successful login, you can write and submit note in the text area of the homepage.
