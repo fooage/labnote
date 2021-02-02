@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"html"
 	"net/http"
 	"time"
 
@@ -65,7 +66,8 @@ func PostNote(c *gin.Context) {
 	content := c.PostForm("content")
 	note := &data.Note{
 		Time:    time.Now(),
-		Content: content,
+		Content: html.EscapeString(content),
+		// Escaping to prevent XSS attacks.
 	}
 	err := data.InsertOneNote(note)
 	if err != nil {
