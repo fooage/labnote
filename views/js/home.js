@@ -1,6 +1,9 @@
 // Request to the server and refresh all notes.
 function loadAllNotes() {
   $.ajax({
+    headers: {
+      token: window.localStorage.getItem('token'),
+    },
     url: '/data',
     type: 'get',
     data: null,
@@ -74,6 +77,9 @@ $(document).ready(function () {
     var formParam = $('#form-write').serialize();
     $('textarea').val('').height(24);
     $.ajax({
+      headers: {
+        token: window.localStorage.getItem('token'),
+      },
       url: '/data',
       type: 'post',
       data: formParam,

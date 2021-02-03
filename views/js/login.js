@@ -11,6 +11,7 @@ $(document).ready(function () {
         if (data.pass == true) {
           // Login successfully and jump to the homepage.
           $('#login').removeClass('btn-danger').addClass('btn-success');
+          window.localStorage.setItem('token', data.token);
           window.location.href = '/home';
         } else {
           // Change the color of the login button when the login fails.

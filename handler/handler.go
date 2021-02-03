@@ -9,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CookieExpireDuration is cookie's valid duration.
+var CookieExpireDuration = 7200
+
 // VerifyAuthority is a permission authentication middleware.
 func VerifyAuthority() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -43,11 +46,12 @@ func PostLoginData(c *gin.Context) {
 		Password: password,
 	}
 	if data.CheckUserAuth(user) {
-		// Set the cookie for this user's successful login and redirect it.
-		c.SetCookie("auth", "true", 3600, "/", "127.0.0.1", false, true)
-		c.JSON(http.StatusOK, gin.H{"pass": true, "email": email, "password": password})
+		// Set the token and cookie for this user's successful login and redirect it.
+		key, _ := GenerateToken(*user)
+		c.SetCookie("auth", "true", CookieExpireDuration, "/", "127.0.0.1", false, true)
+		c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"pass": false, "email": email, "password": password})
+		c.JSON(http.StatusOK, gin.H{"pass": false, "token": nil})
 	}
 }
 
@@ -59,6 +63,30 @@ func GetNotes(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"notes": *notes})
+}
+
+// DataAuthority function check the authentication permission for /data.
+func DataAuthority() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		key := c.Request.Header.Get("token")
+		if key == "" {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			c.Abort()
+			return
+		}
+		claims, err := ParseToken(key)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			c.Abort()
+			return
+		}
+		if !data.CheckUserAuth(&claims.User) {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
 }
 
 // PostNote is a function that receive the log submitted in the background.

@@ -21,8 +21,10 @@ func InitRouter() *gin.Engine {
 	router.POST("/login", handler.PostLoginData)
 	{
 		router.GET("/home", handler.VerifyAuthority(), handler.GetHomePage)
-		router.GET("/data", handler.VerifyAuthority(), handler.GetNotes)
-		router.POST("/data", handler.VerifyAuthority(), handler.PostNote)
+	}
+	{
+		router.GET("/data", handler.DataAuthority(), handler.GetNotes)
+		router.POST("/data", handler.DataAuthority(), handler.PostNote)
 	}
 	return router
 }
