@@ -31,18 +31,10 @@ Run("127.0.0.1:8090")
 // In ./data/data.go can change the mongodb's connection info.
 ApplyURI("mongodb://127.0.0.1:27017")
 // And in ./handler/handler.go the cookies should be set to the domain of server.
-c.SetCookie("auth", "true", 3600, "/", "127.0.0.1", false, true)
+c.SetCookie("auth", "true", CookieExpireDuration, "/", "127.0.0.1", false, true)
 ```
 
 If you are not logged in, you will be redirected to the login interface. After successful login, you can write and submit note in the text area of the homepage.
-
-## To Fix
-
-- Error redirect caused by 301 cache
-
-Browsers often cache the 301 status, which leads to incorrect redirection after a successful login.
-
-> Solution: `F12` >> `Network` >> `Disable cache`
 
 ## To Do
 
