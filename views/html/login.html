@@ -27,56 +27,8 @@
       crossorigin="anonymous"
     ></script>
     <!-- Load custom styles and scripts. -->
-    <style>
-      .container {
-        margin-top: 20px;
-        margin-bottom: 40px;
-      }
-      .form-signin {
-        margin: 0 auto;
-        width: 100%;
-        max-width: 320px;
-      }
-      .form-control {
-        position: relative;
-        box-sizing: border-box;
-        height: auto;
-        font-family: 'Courier New', Courier, monospace;
-        padding: 10px;
-        font-size: 18px;
-      }
-      .btn:focus,
-      .form-control:focus {
-        box-shadow: none;
-      }
-    </style>
-    <script>
-      $(document).ready(function () {
-        $('#login').on('click', function () {
-          var formParam = $('#form-login').serialize();
-          $('input').val('');
-          $.ajax({
-            url: '/login',
-            type: 'post',
-            data: formParam,
-            dataType: 'json',
-            success: function (data) {
-              if (data.pass == true) {
-                // Login successfully and jump to the homepage.
-                $('#login').removeClass('btn-danger').addClass('btn-success');
-                window.location.href = '/home';
-              } else {
-                // Change the color of the login button when the login fails.
-                $('#login').removeClass('btn-success').addClass('btn-danger');
-              }
-            },
-            error: function (data) {
-              $('#login').removeClass('btn-success').addClass('btn-danger');
-            },
-          });
-        });
-      });
-    </script>
+    <link rel="stylesheet" href="/views/css/login.css" />
+    <script type="text/javascript" src="/views/js/login.js"></script>
     <title>Login</title>
   </head>
   <body class="text-center">

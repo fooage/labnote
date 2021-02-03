@@ -1,0 +1,27 @@
+.container {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.jumbotron {
+  background-color: white;
+  padding-top: 10px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+.form-control,
+.list-group-item {
+  white-space: pre-wrap;
+  font-size: 18px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 400;
+  resize: none;
+}
+.btn:focus,
+.form-control:focus {
+  box-shadow: none;
+}
+.list-group {
+  display: block;
+  padding: 25px;
+  padding-top: 15px;
+}

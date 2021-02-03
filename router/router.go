@@ -10,7 +10,8 @@ import (
 // InitRouter initialize routing and add local middleware.
 func InitRouter() *gin.Engine {
 	router := gin.Default()
-	router.LoadHTMLGlob("views/*")
+	router.LoadHTMLGlob("views/html/*")
+	router.StaticFS("/views", http.Dir("./views"))
 	// Set the root redirect function to the real homepage.
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/home")
