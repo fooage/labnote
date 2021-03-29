@@ -4,7 +4,9 @@ Use the web page to achieve access to the laboratory log of all platforms, and I
 
 Not many things are used, so it is fairly easy to deploy, mainly divided into two parts.
 
-### Config mongodb
+### Config database
+
+1. MongoDB
 
 Install mongodb on different systems, and you can often customize the database by starting with the configuration file.
 
@@ -15,6 +17,10 @@ mongod --config ./conf/mongodb.conf
 
 - Tips: You can use the `systemctl status mongod` to check the status of mongodb.
 
+2. MySQL
+
+This part is being prepared, so stay tuned.
+
 ### Install server
 
 1. Use commands `go build main.go` to compile executable file.
@@ -23,13 +29,11 @@ mongod --config ./conf/mongodb.conf
 
 ## Running
 
-You can change some code in this project to achieve the IP address and port change.
+You can change some code in this project to achieve the IP address and port change, **remember to change your database connection settings**.
 
 ```go
 // In ./main.go can change the web server's conncetion info.
 Run("127.0.0.1:8090")
-// In ./data/data.go can change the mongodb's connection info.
-ApplyURI("mongodb://127.0.0.1:27017")
 // And in ./handler/handler.go the cookies should be set to the domain of server.
 c.SetCookie("auth", "true", CookieExpireDuration, "/", "127.0.0.1", false, true)
 ```
@@ -38,4 +42,4 @@ If you are not logged in, you will be redirected to the login interface. After s
 
 ## To Do
 
-There is lack of a register module in this website, At present, only allowed the administrator add users who is authorized. But this is also a safer way, because the administrator is a trusted insider!
+Recently, the database and web server have been decoupled, and support for more types of databases will be added.

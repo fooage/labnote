@@ -28,45 +28,54 @@ func VerifyAuthority() gin.HandlerFunc {
 }
 
 // GetHomePage is a handler function which response the GET request for homepage.
-func GetHomePage(c *gin.Context) {
-	c.HTML(http.StatusOK, "home.html", gin.H{})
+func GetHomePage() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", gin.H{})
+	}
 }
 
 // GetLoginPage is a function that handles GET requests for login pages.
-func GetLoginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{})
+func GetLoginPage() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.html", gin.H{})
+	}
 }
 
 // PostLoginData is a function responsible for receiving verification login information.
-func PostLoginData(c *gin.Context) {
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-	user := &data.User{
-		Email:    email,
-		Password: password,
-	}
-	if data.CheckUserAuth(user) {
-		// Set the token and cookie for this user's successful login and redirect it.
-		key, _ := GenerateToken(*user)
-		c.SetCookie("auth", "true", CookieExpireDuration, "/", "127.0.0.1", false, true)
-		c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"pass": false, "token": nil})
+func PostLoginData(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		email := c.PostForm("email")
+		password := c.PostForm("password")
+		user := &data.User{
+			Email:    email,
+			Password: password,
+		}
+		res, _ := db.CheckUserAuth(user)
+		if res {
+			// Set the token and cookie for this user's successful login and redirect it.
+			key, _ := GenerateToken(*user)
+			c.SetCookie("auth", "true", CookieExpireDuration, "/", "127.0.0.1", false, true)
+			c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"pass": false, "token": nil})
+		}
 	}
 }
 
 // GetNotes get all the notes it have so far.
-func GetNotes(c *gin.Context) {
-	notes, err := data.GetAllNotes()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{})
-		return
+func GetNotes(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		notes, err := db.GetAllNotes()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"notes": *notes})
 	}
-	c.JSON(http.StatusOK, gin.H{"notes": *notes})
 }
 
 // DataAuthority function check the authentication permission for /data.
-func DataAuthority() gin.HandlerFunc {
+func DataAuthority(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := c.Request.Header.Get("token")
 		if key == "" {
@@ -80,7 +89,8 @@ func DataAuthority() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if !data.CheckUserAuth(&claims.User) {
+		res, _ := db.CheckUserAuth(&claims.User)
+		if !res {
 			c.JSON(http.StatusBadRequest, gin.H{})
 			c.Abort()
 			return
@@ -90,17 +100,19 @@ func DataAuthority() gin.HandlerFunc {
 }
 
 // PostNote is a function that receive the log submitted in the background.
-func PostNote(c *gin.Context) {
-	content := c.PostForm("content")
-	note := &data.Note{
-		Time:    time.Now(),
-		Content: html.EscapeString(content),
-		// Escaping to prevent XSS attacks.
+func PostNote(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		content := c.PostForm("content")
+		note := &data.Note{
+			Time:    time.Now(),
+			Content: html.EscapeString(content),
+			// Escaping to prevent XSS attacks.
+		}
+		err := db.InsertOneNote(note)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{})
 	}
-	err := data.InsertOneNote(note)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{})
 }

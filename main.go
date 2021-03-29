@@ -5,11 +5,13 @@ import (
 	"github.com/fooage/labnote/router"
 )
 
-// FIXME: There are some problem in redirect 301 cache.
+// TODO: It will add the support of others database.
 
 func main() {
-	data.InitDatabase()
-	svr := router.InitRouter()
-	svr.Run("127.0.0.1:8090")
-	data.CloseDatabase()
+	// Initialize and close it after calling the used database constructor.
+	db := data.NewMongoDB()
+	data.ConnectDatabase(db)
+	svr := router.InitRouter(db)
+	svr.Run(":8090")
+	data.DisconnectDatabase(db)
 }
