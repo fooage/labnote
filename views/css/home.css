@@ -16,10 +16,6 @@
   font-weight: 400;
   resize: none;
 }
-.btn:focus,
-.form-control:focus {
-  box-shadow: none;
-}
 .list-group {
   display: block;
   padding: 25px;
