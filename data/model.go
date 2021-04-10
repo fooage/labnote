@@ -13,3 +13,10 @@ type Note struct {
 	Time    time.Time `bson:"time"`    // Upload time of note.
 	Content string    `bson:"content"` // Content of this note.
 }
+
+// Fils is a structure of server's files.
+type File struct {
+	Time time.Time `bson:"time"` // Upload time of file.
+	Name string    `bson:"name"` // The name of this file.
+	Url  string    `bson:"url"`  // Url of this file which is used to download.
+}

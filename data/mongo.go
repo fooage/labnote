@@ -75,6 +75,15 @@ func (m *MongoDB) InsertOneNote(note *Note) error {
 	return nil
 }
 
+// InsertOneFile insert a new file into the database's file collection.
+func (m *MongoDB) InsertOneFile(file *File) error {
+	_, err := m.db.Collection("file").InsertOne(context.TODO(), file)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetAllNotes function return all the notes in the database.
 func (m *MongoDB) GetAllNotes() (*[]Note, error) {
 	var all = make([]Note, 0)
@@ -85,6 +94,24 @@ func (m *MongoDB) GetAllNotes() (*[]Note, error) {
 	for cur.Next(context.TODO()) {
 		// Traverse all notes in the database.
 		var elem Note
+		err := cur.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, elem)
+	}
+	return &all, nil
+}
+
+// GetAllFiles is used to return all of the files in storage.
+func (m *MongoDB) GetAllFiles() (*[]File, error) {
+	var all = make([]File, 0)
+	cur, err := m.db.Collection("file").Find(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	for cur.Next(context.TODO()) {
+		var elem File
 		err := cur.Decode(&elem)
 		if err != nil {
 			return nil, err

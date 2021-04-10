@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/fooage/labnote/data"
 	"github.com/fooage/labnote/router"
 )
@@ -9,6 +11,7 @@ import (
 
 func main() {
 	// Initialize and close it after calling the used database constructor.
+	os.Mkdir("./storage", os.ModePerm)
 	db := data.NewMongoDB()
 	data.ConnectDatabase(db)
 	svr := router.InitRouter(db)

@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"html"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/fooage/labnote/data"
@@ -41,6 +44,13 @@ func GetLoginPage() gin.HandlerFunc {
 	}
 }
 
+// GetLibraryPage is the function which response to the library page's get request.
+func GetLibraryPage() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "library.html", gin.H{})
+	}
+}
+
 // PostLoginData is a function responsible for receiving verification login information.
 func PostLoginData(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -62,8 +72,8 @@ func PostLoginData(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// GetNotes get all the notes it have so far.
-func GetNotes(db data.Database) gin.HandlerFunc {
+// GetNotesList get all the notes it have so far.
+func GetNotesList(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		notes, err := db.GetAllNotes()
 		if err != nil {
@@ -114,5 +124,155 @@ func PostNote(db data.Database) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+// GetChunkList is a function that returns the status of the file in the server.
+func GetChunkList(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		hash := c.Query("hash")
+		name := c.Query("name")
+		path := fmt.Sprintf("./storage/%s", hash)
+		chunkList := []string{}
+		exist, err := PathExists(path)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			fmt.Print(err)
+			return
+		}
+		state := false
+		if exist {
+			files, err := ioutil.ReadDir(path)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{})
+				fmt.Print(err)
+				return
+			}
+			for _, file := range files {
+				fileName := file.Name()
+				chunkList = append(chunkList, fileName)
+				if fileName == name {
+					state = true
+				}
+			}
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"state": state,
+			"list":  chunkList,
+		})
+	}
+}
+
+// PostChunk is functions for receiving file slices.
+func PostChunk(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		hash := c.PostForm("hash")
+		name := c.PostForm("name")
+		path := fmt.Sprintf("./storage/%s", hash)
+		chunk, _ := c.FormFile("file")
+		exist, err := PathExists(path)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			fmt.Println(err)
+			return
+		}
+		// If there isn't a fixed path.
+		if !exist {
+			os.Mkdir(path, os.ModePerm)
+		}
+		err = c.SaveUploadedFile(chunk, fmt.Sprintf("./storage/%s/%s", hash, chunk.Filename))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			fmt.Println(err)
+		} else {
+			state := false
+			chunkList := []string{}
+			files, err := ioutil.ReadDir(path)
+			if err != nil {
+				fmt.Println(err)
+			}
+			for _, file := range files {
+				fileName := file.Name()
+				chunkList = append(chunkList, fileName)
+				if fileName == name {
+					state = true
+				}
+			}
+			// Feedback the existing slices to the front.
+			c.JSON(http.StatusOK, gin.H{
+				"state": state,
+				"list":  chunkList,
+			})
+		}
+	}
+}
+
+// GetMergeFile get instructions for receiving combined files.
+func GetMergeFile(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		hash := c.Query("hash")
+		name := c.Query("name")
+		path := fmt.Sprintf("./storage/%s", hash)
+		exist, _ := PathExists(path)
+		if !exist {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			return
+		}
+		if err := MergeSlice(path, name); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			fmt.Println(err)
+			return
+		}
+		// Verify file integrity.
+		if FileHash(path, name) == hash {
+			url := fmt.Sprintf("http://127.0.0.1:8090/download?hash=%s&name=%s", hash, name)
+			if err := db.InsertOneFile(&data.File{
+				Time: time.Now(),
+				Name: name,
+				Url:  url,
+			}); err != nil {
+				fmt.Println(err)
+				c.JSON(http.StatusBadRequest, gin.H{
+					"state": false,
+				})
+				os.RemoveAll(path)
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"state": true,
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"state": false,
+			})
+			os.RemoveAll(path)
+		}
+	}
+}
+
+// GetFilesList get all the files in server's storage.
+func GetFilesList(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		files, err := db.GetAllFiles()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"files": files})
+	}
+}
+
+// GetFile is the handler function for file download.
+func GetFile(db data.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		hash := c.Query("hash")
+		name := c.Query("name")
+		path := fmt.Sprintf("./storage/%s/%s", hash, name)
+		exist, _ := PathExists(path)
+		if !exist {
+			c.JSON(http.StatusBadRequest, gin.H{})
+		} else {
+			c.File(path)
+		}
 	}
 }

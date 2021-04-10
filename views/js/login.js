@@ -1,11 +1,11 @@
 $(document).ready(function () {
   $('#login').on('click', function () {
-    var formParam = $('#form-login').serialize();
+    let formData = $('#form-login').serialize();
     $('input').val('');
     $.ajax({
       url: '/login',
       type: 'post',
-      data: formParam,
+      data: formData,
       dataType: 'json',
       success: function (data) {
         if (data.pass == true) {
@@ -18,7 +18,7 @@ $(document).ready(function () {
           $('#login').removeClass('btn-success').addClass('btn-danger');
         }
       },
-      error: function (data) {
+      error: function () {
         $('#login').removeClass('btn-success').addClass('btn-danger');
       },
     });
