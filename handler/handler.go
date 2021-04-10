@@ -12,8 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CookieExpireDuration is cookie's valid duration.
-var CookieExpireDuration = 7200
+const (
+	// CookieExpireDuration is cookie's valid duration.
+	CookieExpireDuration = 7200
+	// CookieAccessScope is cookie's scope.
+	CookieAccessScope = "127.0.0.1"
+	// FileStorageDirectory is where these files storage.
+	FileStorageDirectory = "./storage"
+	// DownloadUrlBase decide the base url of file's url.
+	DownloadUrlBase = "http://127.0.0.1:8090/download"
+)
 
 // VerifyAuthority is a permission authentication middleware.
 func VerifyAuthority() gin.HandlerFunc {
@@ -64,7 +72,7 @@ func PostLoginData(db data.Database) gin.HandlerFunc {
 		if res {
 			// Set the token and cookie for this user's successful login and redirect it.
 			key, _ := GenerateToken(*user)
-			c.SetCookie("auth", "true", CookieExpireDuration, "/", "127.0.0.1", false, true)
+			c.SetCookie("auth", "true", CookieExpireDuration, "/", CookieAccessScope, false, true)
 			c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
 		} else {
 			c.JSON(http.StatusOK, gin.H{"pass": false, "token": nil})
@@ -132,7 +140,7 @@ func GetChunkList(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
 		name := c.Query("name")
-		path := fmt.Sprintf("./storage/%s", hash)
+		path := FileStorageDirectory + "/" + hash
 		chunkList := []string{}
 		exist, err := PathExists(path)
 		if err != nil {
@@ -168,7 +176,7 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.PostForm("hash")
 		name := c.PostForm("name")
-		path := fmt.Sprintf("./storage/%s", hash)
+		path := FileStorageDirectory + "/" + hash
 		chunk, _ := c.FormFile("file")
 		exist, err := PathExists(path)
 		if err != nil {
@@ -180,7 +188,7 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 		if !exist {
 			os.Mkdir(path, os.ModePerm)
 		}
-		err = c.SaveUploadedFile(chunk, fmt.Sprintf("./storage/%s/%s", hash, chunk.Filename))
+		err = c.SaveUploadedFile(chunk, FileStorageDirectory+"/"+hash+"/"+chunk.Filename)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{})
 			fmt.Println(err)
@@ -212,7 +220,7 @@ func GetMergeFile(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
 		name := c.Query("name")
-		path := fmt.Sprintf("./storage/%s", hash)
+		path := FileStorageDirectory + "/" + hash
 		exist, _ := PathExists(path)
 		if !exist {
 			c.JSON(http.StatusBadRequest, gin.H{})
@@ -225,7 +233,7 @@ func GetMergeFile(db data.Database) gin.HandlerFunc {
 		}
 		// Verify file integrity.
 		if FileHash(path, name) == hash {
-			url := fmt.Sprintf("http://127.0.0.1:8090/download?hash=%s&name=%s", hash, name)
+			url := DownloadUrlBase + "?hash=" + hash + "&name=" + name
 			if err := db.InsertOneFile(&data.File{
 				Time: time.Now(),
 				Name: name,
@@ -267,7 +275,7 @@ func GetFile(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
 		name := c.Query("name")
-		path := fmt.Sprintf("./storage/%s/%s", hash, name)
+		path := FileStorageDirectory + "/" + hash + "/" + name
 		exist, _ := PathExists(path)
 		if !exist {
 			c.JSON(http.StatusBadRequest, gin.H{})
