@@ -9,6 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const (
+	// ConnectCommand is the connection command to conncet with MongoDB.
+	ConnectCommand = "mongodb://127.0.0.1:27017"
+	// DatabaseName is which database will be used.
+	DatabaseName = "labnote"
+)
+
 // Here is the definition of the database structure.
 type MongoDB struct {
 	db     *mongo.Database
@@ -24,7 +31,7 @@ func NewMongoDB() *MongoDB {
 
 // InitDatabase function initialize the connection to the database.
 func (m *MongoDB) InitDatabase() error {
-	opt := options.Client().ApplyURI("mongodb://49.234.35.49:27017")
+	opt := options.Client().ApplyURI(ConnectCommand)
 	// Change the port and connection method for connecting to the database according to the situation.
 	client, err := mongo.Connect(context.TODO(), opt)
 	if err != nil {
@@ -36,7 +43,7 @@ func (m *MongoDB) InitDatabase() error {
 		fmt.Println(err)
 		return err
 	}
-	db := client.Database("labnote")
+	db := client.Database(DatabaseName)
 	// Init these variable of mongodb.
 	m.db = db
 	m.client = client
@@ -75,6 +82,15 @@ func (m *MongoDB) InsertOneNote(note *Note) error {
 	return nil
 }
 
+// InsertOneFile insert a new file into the database's file collection.
+func (m *MongoDB) InsertOneFile(file *File) error {
+	_, err := m.db.Collection("file").InsertOne(context.TODO(), file)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetAllNotes function return all the notes in the database.
 func (m *MongoDB) GetAllNotes() (*[]Note, error) {
 	var all = make([]Note, 0)
@@ -85,6 +101,24 @@ func (m *MongoDB) GetAllNotes() (*[]Note, error) {
 	for cur.Next(context.TODO()) {
 		// Traverse all notes in the database.
 		var elem Note
+		err := cur.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, elem)
+	}
+	return &all, nil
+}
+
+// GetAllFiles is used to return all of the files in storage.
+func (m *MongoDB) GetAllFiles() (*[]File, error) {
+	var all = make([]File, 0)
+	cur, err := m.db.Collection("file").Find(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	for cur.Next(context.TODO()) {
+		var elem File
 		err := cur.Decode(&elem)
 		if err != nil {
 			return nil, err

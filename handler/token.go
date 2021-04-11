@@ -8,11 +8,14 @@ import (
 	"github.com/fooage/labnote/data"
 )
 
-// TokenExpireDuration is token's valid duration.
-const TokenExpireDuration = time.Hour * 2
-
-// EncryptionKey used for encryption.
-var EncryptionKey = []byte("20180212")
+const (
+	// TokenExpireDuration is token's valid duration.
+	TokenExpireDuration = time.Hour * 2
+	// EncryptionKey used for encryption.
+	EncryptionKey = "20180212"
+	// TokenIssuer is the token's provider.
+	TokenIssuer = "labnote"
+)
 
 // Claims is my custom claims.
 type Claims struct {
@@ -26,17 +29,17 @@ func GenerateToken(user data.User) (string, error) {
 		user,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(),
-			Issuer:    "labnote",
+			Issuer:    TokenIssuer,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(EncryptionKey)
+	return token.SignedString([]byte(EncryptionKey))
 }
 
 // ParseToken is a function which parse token.
 func ParseToken(key string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(key, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return EncryptionKey, nil
+		return []byte(EncryptionKey), nil
 	})
 	if err != nil {
 		return nil, err

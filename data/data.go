@@ -12,8 +12,12 @@ type Database interface {
 	CheckUserAuth(user *User) (bool, error)
 	// Insert one note to this labnote system.
 	InsertOneNote(note *Note) error
+	// Insert one file to this labnote system.
+	InsertOneFile(file *File) error
 	// Request all notes from the database.
 	GetAllNotes() (*[]Note, error)
+	// Request all files from the database.
+	GetAllFiles() (*[]File, error)
 }
 
 // ConnectDatabase is function which load the database.

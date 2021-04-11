@@ -22,10 +22,16 @@ func InitRouter(db data.Database) *gin.Engine {
 	router.POST("/login", handler.PostLoginData(db))
 	{
 		router.GET("/home", handler.VerifyAuthority(), handler.GetHomePage())
+		router.GET("/library", handler.VerifyAuthority(), handler.GetLibraryPage())
+		router.GET("/download", handler.VerifyAuthority(), handler.GetFile(db))
 	}
 	{
-		router.GET("/data", handler.DataAuthority(db), handler.GetNotes(db))
-		router.POST("/data", handler.DataAuthority(db), handler.PostNote(db))
+		router.GET("/note", handler.DataAuthority(db), handler.GetNotesList(db))
+		router.POST("/write", handler.DataAuthority(db), handler.PostNote(db))
+		router.GET("/file", handler.DataAuthority(db), handler.GetFilesList(db))
+		router.GET("/check", handler.DataAuthority(db), handler.GetChunkList(db))
+		router.POST("/upload", handler.DataAuthority(db), handler.PostChunk(db))
+		router.GET("/merge", handler.DataAuthority(db), handler.GetMergeFile(db))
 	}
 	return router
 }

@@ -4,16 +4,16 @@ function loadAllNotes() {
     headers: {
       token: window.localStorage.getItem('token'),
     },
-    url: '/data',
+    url: '/note',
     type: 'get',
     data: null,
     dataType: 'json',
     success: function (data) {
       $('#submit').removeClass('btn-danger').addClass('btn-success');
       $('#note-list').empty();
-      for (var i = 0; i < data.notes.length; i++) {
+      for (let i = 0; i < data.notes.length; i++) {
         data.notes[i].Time = changeDateFormat(data.notes[i].Time);
-        var addtion =
+        let addtion =
           '<li class="list-group-item"><div class="media"><div class="media-body"><h6><i class="far fa-calendar-alt"></i> ' +
           data.notes[i].Time +
           '</h6><span>' +
@@ -30,16 +30,16 @@ function loadAllNotes() {
 }
 // Parse the date format in mongodb into a simple date format.
 function changeDateFormat(cellval) {
-  var dateVal = cellval + '';
+  let dateVal = cellval + '';
   if (cellval != null) {
     // Use regular expressions.
-    var reg = new RegExp('.\\d{3}\\+\\d{4}$');
-    var date = new Date(dateVal.replace(reg, '').replace('T', ' '));
-    var month =
+    let reg = new RegExp('.\\d{3}\\+\\d{4}$');
+    let date = new Date(dateVal.replace(reg, '').replace('T', ' '));
+    let month =
       date.getMonth() + 1 < 10
         ? '0' + (date.getMonth() + 1)
         : date.getMonth() + 1;
-    var day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+    let day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
     return date.getFullYear() + '-' + month + '-' + day;
   }
 }
@@ -62,10 +62,10 @@ $(document).ready(function () {
   $('textarea').on('keydown', function (e) {
     if (e.keyCode == 9) {
       e.preventDefault();
-      var indent = '    ';
-      var start = this.selectionStart;
-      var end = this.selectionEnd;
-      var selected = window.getSelection().toString();
+      let indent = '    ';
+      let start = this.selectionStart;
+      let end = this.selectionEnd;
+      let selected = window.getSelection().toString();
       selected = indent + selected.replace(/\n/g, '\n' + indent);
       this.value =
         this.value.substring(0, start) + selected + this.value.substring(end);
@@ -74,15 +74,15 @@ $(document).ready(function () {
   });
   // Function to add log items to the log list.
   $('#submit').click(function () {
-    var formParam = $('#form-write').serialize();
+    let formData = $('#form-write').serialize();
     $('textarea').val('').height(24);
     $.ajax({
       headers: {
         token: window.localStorage.getItem('token'),
       },
-      url: '/data',
+      url: '/write',
       type: 'post',
-      data: formParam,
+      data: formData,
       dataType: 'json',
       success: function () {
         $('#submit').removeClass('btn-danger').addClass('btn-success');

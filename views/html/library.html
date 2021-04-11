@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <!-- Load Bootstrap and jQuery framework. -->
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://kit.fontawesome.com/71e3554019.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/js/bootstrap.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
+    <!-- Load custom styles and scripts. -->
+    <link rel="stylesheet" href="/views/css/library.css" />
+    <script type="text/javascript" src="/views/js/library.js"></script>
+    <title>Library</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="jumbotron">
+        <h1 class="display-3">File system?</h1>
+        <p class="lead">
+          This is a file cloud which is used to storage our files or other
+          things. <a href="/home" class="badge badge-success">other</a>
+        </p>
+        <hr class="my-2" />
+        <p>Let's upload or download something you want.</p>
+        <form id="form-upload">
+          <div class="row">
+            <div class="col-4">
+              <div class="btn-group btn-block" role="group">
+                <button id="upload" class="btn btn-success" type="button">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                </button>
+                <button id="choose" class="btn btn-primary" type="button">
+                  <i class="fas fa-box-open"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-8">
+              <div class="progress">
+                <div
+                  id="progress"
+                  class="progress-bar progress-bar-striped progress-bar-animated bg-secondary"
+                  role="progressbar"
+                  style="width: 0%"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
+            </div>
+            <!-- The real choose button for upload files. -->
+            <div class="form-group d-none">
+              <input id="file" type="file" class="form-control-file" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <ul id="file-list" class="list-group list-group-flush">
+        <!-- There is going to add some notes. -->
+      </ul>
+    </div>
+  </body>
+</html>
