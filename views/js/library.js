@@ -154,64 +154,66 @@ $(document).ready(function () {
     $('#choose').attr('disabled', 'disabled');
     $('#upload').attr('disabled', 'disabled');
     updateProgress(0);
-    const file = $('#file')[0].files[0];
-    if (file.size == 0) {
-      $('#upload').removeClass('btn-success').addClass('btn-danger');
-      return;
-    }
-    const chunkSize = 4 * 1024 * 1024;
-    const chunkTotal = Math.ceil(file.size / chunkSize);
-    const sliceBuffer = [];
-    for (let i = 0; i < chunkTotal; i++) {
-      const blobPart = file.slice(
-        sliceBuffer.length * chunkSize,
-        Math.min((sliceBuffer.length + 1) * chunkSize, file.size)
-      );
-      sliceBuffer.push(blobPart);
-    }
-    let hash = window.localStorage.getItem(file.name + ' ' + file.size);
-    // If there is already a calculated Hash, then transfer it directly.
-    if (hash != null) {
-      while (true) {
-        let state = uploadFile(hash, file.name, sliceBuffer);
-        if (state == true) {
-          loadAllFiles();
-          updateProgress(100);
-          $('#upload').removeClass('btn-danger').addClass('btn-success');
-          break;
-        }
+    setTimeout(function () {
+      const file = $('#file')[0].files[0];
+      if (file.size == 0) {
+        $('#upload').removeClass('btn-success').addClass('btn-danger');
+        return;
       }
-    } else {
-      const fileReader = new FileReader();
-      const spark = new SparkMD5.ArrayBuffer();
-      let index = 0;
-      fileReader.onload = function () {
-        spark.append(fileReader.result);
-        index += 1;
-        if (index < sliceBuffer.length) {
-          loadNext();
-        } else {
-          hash = spark.end();
-          window.localStorage.setItem(file.name + ' ' + file.size, hash);
-          $('#upload').removeClass('btn-danger').addClass('btn-success');
-          // Begin to check these chunk's state in server.
-          while (true) {
-            let state = uploadFile(hash, file.name, sliceBuffer);
-            if (state == true) {
-              loadAllFiles();
-              updateProgress(100);
-              $('#upload').removeClass('btn-danger').addClass('btn-success');
-              break;
-            }
+      const chunkSize = 2 * 1024 * 1024;
+      const chunkTotal = Math.ceil(file.size / chunkSize);
+      const sliceBuffer = [];
+      for (let i = 0; i < chunkTotal; i++) {
+        const blobPart = file.slice(
+          sliceBuffer.length * chunkSize,
+          Math.min((sliceBuffer.length + 1) * chunkSize, file.size)
+        );
+        sliceBuffer.push(blobPart);
+      }
+      let hash = window.localStorage.getItem(file.name + ' ' + file.size);
+      // If there is already a calculated Hash, then transfer it directly.
+      if (hash != null) {
+        while (true) {
+          let state = uploadFile(hash, file.name, sliceBuffer);
+          if (state == true) {
+            loadAllFiles();
+            updateProgress(100);
+            $('#upload').removeClass('btn-danger').addClass('btn-success');
+            break;
           }
         }
-      };
-      function loadNext() {
-        fileReader.readAsArrayBuffer(sliceBuffer[index]);
+      } else {
+        const fileReader = new FileReader();
+        const spark = new SparkMD5.ArrayBuffer();
+        let index = 0;
+        fileReader.onload = function () {
+          spark.append(fileReader.result);
+          index += 1;
+          if (index < sliceBuffer.length) {
+            loadNext();
+          } else {
+            hash = spark.end();
+            window.localStorage.setItem(file.name + ' ' + file.size, hash);
+            $('#upload').removeClass('btn-danger').addClass('btn-success');
+            // Begin to check these chunk's state in server.
+            while (true) {
+              let state = uploadFile(hash, file.name, sliceBuffer);
+              if (state == true) {
+                loadAllFiles();
+                updateProgress(100);
+                $('#upload').removeClass('btn-danger').addClass('btn-success');
+                break;
+              }
+            }
+          }
+        };
+        function loadNext() {
+          fileReader.readAsArrayBuffer(sliceBuffer[index]);
+        }
+        loadNext();
       }
-      loadNext();
-    }
-    $('#choose').removeAttr('disabled', 'disabled');
-    $('#upload').removeAttr('disabled', 'disabled');
+      $('#choose').removeAttr('disabled', 'disabled');
+      $('#upload').removeAttr('disabled', 'disabled');
+    }, 100);
   });
 });
