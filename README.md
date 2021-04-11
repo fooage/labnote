@@ -43,6 +43,13 @@ const (
 )
 ```
 
+Resumable uploads are also provided, you can change the file blocks size according to your network environment.
+
+```javascript
+// library.js
+const chunkSize = 2 * 1024 * 1024;
+```
+
 ### Install server
 
 1. Use commands `go build main.go` to compile executable file.
