@@ -6,6 +6,7 @@ import (
 	"github.com/fooage/labnote/data"
 	"github.com/fooage/labnote/handler"
 	"github.com/fooage/labnote/router"
+	"github.com/gin-gonic/gin"
 )
 
 // TODO: It will add the support of others database.
@@ -20,6 +21,7 @@ func main() {
 	os.Mkdir(handler.FileStorageDirectory, os.ModePerm)
 	db := data.NewMongoDB()
 	data.ConnectDatabase(db)
+	gin.SetMode(gin.ReleaseMode)
 	svr := router.InitRouter(db)
 	svr.Run(ServerAddr)
 	data.DisconnectDatabase(db)
