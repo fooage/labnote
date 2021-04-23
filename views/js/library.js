@@ -85,7 +85,6 @@ function uploadFile(fileHash, fileName, sliceBuffer) {
     updateProgress(100);
     return state;
   }
-  let percent = 0;
   chunkList = chunkList.map((e) => parseInt(e));
   sliceBuffer.forEach((buffer, i) => {
     if (state == true) {
@@ -117,8 +116,6 @@ function uploadFile(fileHash, fileName, sliceBuffer) {
         },
       });
     }
-    percent = (chunkList.length * 100) / sliceBuffer.length;
-    updateProgress(percent);
     // Alert the server to merge the file.
     if (chunkList.length == sliceBuffer.length && state == false) {
       $.ajax({
