@@ -41,6 +41,11 @@ const (
 	// DatabaseName is which database will be used.
 	DatabaseName = "labnote"
 )
+// mysql.go
+const (
+	//MySQL's connection statement.
+	Dsn = "root:256275@tcp(127.0.0.1:3306)/labnote?charset=utf8mb4&parseTime=True"
+)
 ```
 
 Resumable uploads are also provided, you can change the file blocks size according to your network environment.
@@ -95,6 +100,14 @@ type Database interface {
 	// Request all files from the database.
 	GetAllFiles() (*[]File, error)
 }
+```
+
+If you want to change the database which the server used, you can change `main.go` in this snippet.
+
+```go
+db := data.NewMongoDB()
+// Change database to the other.
+db := data.NewMySQL()
 ```
 
 ### Problem
