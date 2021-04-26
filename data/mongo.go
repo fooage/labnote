@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -35,12 +34,10 @@ func (m *MongoDB) InitDatabase() error {
 	// Change the port and connection method for connecting to the database according to the situation.
 	client, err := mongo.Connect(context.TODO(), opt)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	db := client.Database(DatabaseName)

@@ -8,7 +8,7 @@ import (
 
 const (
 	//MySQL's connection statement.
-	Dsn = "root:256275@tcp(127.0.0.1:3306)/labnote?charset=utf8mb4&parseTime=True"
+	DatabaseSource = "root:256275@tcp(127.0.0.1:3306)/labnote?charset=utf8mb4&parseTime=True"
 )
 
 type MySQL struct {
@@ -23,7 +23,7 @@ func NewMySQL() *MySQL {
 
 // InitDatabase function initialize the connection to the database.
 func (m *MySQL) InitDatabase() error {
-	conn, err := sql.Open("mysql", Dsn)
+	conn, err := sql.Open("mysql", DatabaseSource)
 	if err != nil {
 		return err
 	}
@@ -48,13 +48,13 @@ func (m *MySQL) CloseDatabase() error {
 // CheckUserAuth is a check of if user permissions are correct.
 func (m *MySQL) CheckUserAuth(user *User) (bool, error) {
 	sqlStr := "select password from user where email=?"
-	var u string
-	err := m.db.QueryRow(sqlStr, user.Email).Scan(&u)
+	var password string
+	err := m.db.QueryRow(sqlStr, user.Email).Scan(&password)
 	if err != nil {
 		// Unable to find the result, the login information is wrong.
 		return false, err
 	}
-	if u == user.Password {
+	if password == user.Password {
 		return true, nil
 	}
 	return false, nil
@@ -69,9 +69,9 @@ func (m *MySQL) GetAllNotes() (*[]Note, error) {
 	}
 	var all = make([]Note, 0)
 	for rows.Next() {
-		var n Note
-		rows.Scan(&n.Time, &n.Content)
-		all = append(all, n)
+		var note Note
+		rows.Scan(&note.Time, &note.Content)
+		all = append(all, note)
 	}
 	return &all, nil
 }
@@ -79,11 +79,11 @@ func (m *MySQL) GetAllNotes() (*[]Note, error) {
 // InsertOneNote insert a new note into the database's note collection.
 func (m *MySQL) InsertOneNote(note *Note) error {
 	sqlStr := "insert into note(time,content) values (?,?)"
-	ret, err := m.db.Exec(sqlStr, note.Time, note.Content)
+	res, err := m.db.Exec(sqlStr, note.Time, note.Content)
 	if err != nil {
 		return err
 	}
-	if ret == nil {
+	if res == nil {
 		return err
 	}
 	return nil
@@ -92,11 +92,11 @@ func (m *MySQL) InsertOneNote(note *Note) error {
 // InsertOneFile insert a new file into the database's file collection.
 func (m *MySQL) InsertOneFile(file *File) error {
 	sqlStr := "insert into file(time,name,url) values (?,?,?)"
-	ret, err := m.db.Exec(sqlStr, file.Time, file.Name, file.Url)
+	res, err := m.db.Exec(sqlStr, file.Time, file.Name, file.Url)
 	if err != nil {
 		return err
 	}
-	if ret == nil {
+	if res == nil {
 		return err
 	}
 	return nil
@@ -111,9 +111,9 @@ func (m *MySQL) GetAllFiles() (*[]File, error) {
 	}
 	var all = make([]File, 0)
 	for rows.Next() {
-		var f File
-		rows.Scan(&f.Time, &f.Name, &f.Url)
-		all = append(all, f)
+		var file File
+		rows.Scan(&file.Time, &file.Name, &file.Url)
+		all = append(all, file)
 	}
 	return &all, nil
 }
