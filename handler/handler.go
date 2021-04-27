@@ -72,7 +72,7 @@ func PostLoginData(db data.Database) gin.HandlerFunc {
 		ok, err := db.CheckUserAuth(user)
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusOK, gin.H{"pass": false, "token": nil})
+			c.JSON(http.StatusInternalServerError, gin.H{"pass": false, "token": nil})
 			return
 		}
 		if ok {
@@ -86,7 +86,7 @@ func PostLoginData(db data.Database) gin.HandlerFunc {
 			c.SetCookie("auth", "true", CookieExpireDuration, "/", CookieAccessScope, false, true)
 			c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
 		}
-		c.JSON(http.StatusOK, gin.H{"pass": false, "token": nil})
+		c.JSON(http.StatusUnauthorized, gin.H{"pass": false, "token": nil})
 	}
 }
 
@@ -96,7 +96,7 @@ func GetNotesList(db data.Database) gin.HandlerFunc {
 		notes, err := db.GetAllNotes()
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{"notes": nil})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"notes": *notes})
@@ -108,14 +108,14 @@ func DataAuthority(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := c.Request.Header.Get("token")
 		if key == "" {
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			c.Abort()
 			return
 		}
 		claims, err := ParseToken(key)
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			c.Abort()
 			return
 		}
@@ -127,7 +127,7 @@ func DataAuthority(db data.Database) gin.HandlerFunc {
 			return
 		}
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			c.Abort()
 			return
 		}
@@ -147,7 +147,7 @@ func PostNote(db data.Database) gin.HandlerFunc {
 		err := db.InsertOneNote(note)
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{})
@@ -164,7 +164,7 @@ func GetChunkList(db data.Database) gin.HandlerFunc {
 		exist, err := PathExists(path)
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		state := false
@@ -172,7 +172,7 @@ func GetChunkList(db data.Database) gin.HandlerFunc {
 			files, err := ioutil.ReadDir(path)
 			if err != nil {
 				log.Println(err)
-				c.JSON(http.StatusBadRequest, gin.H{})
+				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
 			for _, file := range files {
@@ -200,7 +200,7 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 		exist, err := PathExists(path)
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		// If there isn't a fixed path.
@@ -210,7 +210,7 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 		err = c.SaveUploadedFile(chunk, FileStorageDirectory+"/"+hash+"/"+chunk.Filename)
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		state := false
@@ -249,12 +249,12 @@ func GetMergeFile(db data.Database) gin.HandlerFunc {
 			return
 		}
 		if !exist {
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		if err := MergeSlice(path, name); err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		// Verify file integrity.
@@ -272,7 +272,7 @@ func GetMergeFile(db data.Database) gin.HandlerFunc {
 				Url:  url,
 			}); err != nil {
 				log.Println(err)
-				c.JSON(http.StatusBadRequest, gin.H{
+				c.JSON(http.StatusInternalServerError, gin.H{
 					"state": false,
 				})
 				os.RemoveAll(path)
@@ -295,7 +295,7 @@ func GetFilesList(db data.Database) gin.HandlerFunc {
 		files, err := db.GetAllFiles()
 		if err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"files": files})
@@ -315,7 +315,7 @@ func GetFile(db data.Database) gin.HandlerFunc {
 			return
 		}
 		if !exist {
-			c.JSON(http.StatusBadRequest, gin.H{})
+			c.JSON(http.StatusInternalServerError, gin.H{})
 		} else {
 			c.File(path)
 		}
