@@ -1,7 +1,5 @@
 package data
 
-import "fmt"
-
 // The definition of the abstract interface of the database.
 type Database interface {
 	// The init function of this database.
@@ -21,19 +19,19 @@ type Database interface {
 }
 
 // ConnectDatabase is function which load the database.
-func ConnectDatabase(data Database) {
+func ConnectDatabase(data Database) error {
 	err := data.InitDatabase()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
+	return nil
 }
 
 // DisconnectDatabase is function which disconnect the database.
-func DisconnectDatabase(data Database) {
+func DisconnectDatabase(data Database) error {
 	err := data.CloseDatabase()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
+	return nil
 }

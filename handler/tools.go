@@ -12,12 +12,16 @@ import (
 )
 
 // FileHash return file md5 code generation function is used to verify integrity.
-func FileHash(path string, name string) string {
-	file, _ := os.Open(path + "/" + name)
+func FileHash(path string, name string) (string, error) {
+	file, err := os.Open(path + "/" + name)
+	if err != nil {
+		return "", err
+	}
 	defer file.Close()
 	hash := md5.New()
 	io.Copy(hash, file)
-	return hex.EncodeToString(hash.Sum(nil))
+	key := hex.EncodeToString(hash.Sum(nil))
+	return key, nil
 }
 
 // Structure definition of file slice.
