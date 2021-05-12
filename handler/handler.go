@@ -85,6 +85,7 @@ func PostLoginData(db data.Database) gin.HandlerFunc {
 			}
 			c.SetCookie("auth", "true", CookieExpireDuration, "/", CookieAccessScope, false, true)
 			c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
+			return
 		}
 		c.JSON(http.StatusUnauthorized, gin.H{"pass": false, "token": nil})
 	}
