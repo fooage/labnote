@@ -1,3 +1,12 @@
+// Function to control the color of submit button.
+function sumbitColor(method) {
+  if (method == 'success') {
+    $('#submit').removeClass('btn-danger').addClass('btn-success');
+  } else if (method == 'danger') {
+    $('#submit').removeClass('btn-success').addClass('btn-danger');
+  }
+}
+
 // Request to the server and refresh all notes.
 function loadAllNotes() {
   $.ajax({
@@ -9,7 +18,7 @@ function loadAllNotes() {
     data: null,
     dataType: 'json',
     success: function (data) {
-      $('#submit').removeClass('btn-danger').addClass('btn-success');
+      sumbitColor('success');
       $('#note-list').empty();
       for (let i = 0; i < data.notes.length; i++) {
         data.notes[i].Time = changeDateFormat(data.notes[i].Time);
@@ -24,10 +33,11 @@ function loadAllNotes() {
       }
     },
     error: function () {
-      $('#submit').removeClass('btn-success').addClass('btn-danger');
+      sumbitColor('danger');
     },
   });
 }
+
 // Parse the date format in mongodb into a simple date format.
 function changeDateFormat(cellval) {
   let dateVal = cellval + '';
@@ -43,9 +53,11 @@ function changeDateFormat(cellval) {
     return date.getFullYear() + '-' + month + '-' + day;
   }
 }
+
 $(document).ready(function () {
   // Load all notes when the interface is loaded.
   loadAllNotes();
+
   // Textarea adaptive height is supported.
   $('textarea')
     .each(function () {
@@ -58,6 +70,7 @@ $(document).ready(function () {
       this.style.height = 'auto';
       this.style.height = this.scrollHeight + 'px';
     });
+
   // Support the tab key's use in textarea.
   $('textarea').on('keydown', function (e) {
     if (e.keyCode == 9) {
@@ -72,6 +85,7 @@ $(document).ready(function () {
       this.setSelectionRange(start + indent.length, start + selected.length);
     }
   });
+
   // Function to add log items to the log list.
   $('#submit').click(function () {
     let formData = $('#form-write').serialize();
@@ -85,12 +99,12 @@ $(document).ready(function () {
       data: formData,
       dataType: 'json',
       success: function () {
-        $('#submit').removeClass('btn-danger').addClass('btn-success');
+        sumbitColor('success');
         // Get and refresh the log list after each submission.
         loadAllNotes();
       },
       error: function () {
-        $('#submit').removeClass('btn-success').addClass('btn-danger');
+        sumbitColor('danger');
       },
     });
   });

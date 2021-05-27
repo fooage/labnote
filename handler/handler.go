@@ -27,7 +27,6 @@ const (
 func VerifyAuthority() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if cookie, err := c.Cookie("auth"); err == nil {
-			log.Println(err)
 			// Find if there is a matching cookie here.
 			if cookie == "true" {
 				c.Next()
@@ -215,7 +214,6 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 			return
 		}
 		state := false
-		chunkList := []string{}
 		files, err := ioutil.ReadDir(path)
 		if err != nil {
 			log.Println(err)
@@ -224,7 +222,6 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 		}
 		for _, file := range files {
 			fileName := file.Name()
-			chunkList = append(chunkList, fileName)
 			if fileName == name {
 				state = true
 			}
@@ -232,7 +229,7 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 		// Feedback the existing slices to the front.
 		c.JSON(http.StatusOK, gin.H{
 			"state": state,
-			"list":  chunkList,
+			"nums":  len(files),
 		})
 	}
 }
@@ -282,11 +279,12 @@ func GetMergeFile(db data.Database) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{
 				"state": true,
 			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"state": false,
+			})
+			os.RemoveAll(path)
 		}
-		c.JSON(http.StatusBadRequest, gin.H{
-			"state": false,
-		})
-		os.RemoveAll(path)
 	}
 }
 

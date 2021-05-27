@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO: It will add the support of others database.
+// TODO: Change to a microservice architecture.
 
 const (
 	// ServerAddr is http service connection address and port.
