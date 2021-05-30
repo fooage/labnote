@@ -8,7 +8,7 @@ import (
 
 const (
 	//MySQL's connection statement.
-	DatabaseSource = "root:256275@tcp(127.0.0.1:3306)/labnote?charset=utf8mb4&parseTime=True"
+	DatabaseSource = "root:password@tcp(127.0.0.1:3306)/labnote"
 )
 
 type MySQL struct {

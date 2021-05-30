@@ -13,16 +13,16 @@ $(document).ready(function () {
     let formData = $('#form-login').serialize();
     $('input').val('');
     $.ajax({
-      url: '/login',
+      url: '/login/submit',
       type: 'post',
       data: formData,
       dataType: 'json',
       success: function (data) {
         if (data.pass == true) {
-          // Login successfully and jump to the homepage.
+          // Login successfully and jump to the journal page.
           loginColor('success');
           window.localStorage.setItem('token', data.token);
-          window.location.href = '/home';
+          window.location.href = '/journal';
         } else {
           // Change the color of the login button when the login fails.
           loginColor('danger');

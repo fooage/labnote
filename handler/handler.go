@@ -20,7 +20,7 @@ const (
 	// FileStorageDirectory is where these files storage.
 	FileStorageDirectory = "./storage"
 	// DownloadUrlBase decide the base url of file's url.
-	DownloadUrlBase = "http://127.0.0.1:8090/download"
+	DownloadUrlBase = "http://127.0.0.1:8090/library/download"
 )
 
 // VerifyAuthority is a permission authentication middleware.
@@ -38,10 +38,10 @@ func VerifyAuthority() gin.HandlerFunc {
 	}
 }
 
-// GetHomePage is a handler function which response the GET request for homepage.
-func GetHomePage() gin.HandlerFunc {
+// GetJournalPage is a handler function which response the GET request for journal page.
+func GetJournalPage() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.HTML(http.StatusOK, "home.html", gin.H{})
+		c.HTML(http.StatusOK, "journal.html", gin.H{})
 	}
 }
 
@@ -59,8 +59,8 @@ func GetLibraryPage() gin.HandlerFunc {
 	}
 }
 
-// PostLoginData is a function responsible for receiving verification login information.
-func PostLoginData(db data.Database) gin.HandlerFunc {
+// SubmitLoginData is a function responsible for receiving verification login information.
+func SubmitLoginData(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
@@ -135,8 +135,8 @@ func DataAuthority(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// PostNote is a function that receive the log submitted in the background.
-func PostNote(db data.Database) gin.HandlerFunc {
+// WriteUserNote is a function that receive the log submitted in the background.
+func WriteUserNote(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		content := c.PostForm("content")
 		note := &data.Note{
@@ -154,8 +154,8 @@ func PostNote(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// GetChunkList is a function that returns the status of the file in the server.
-func GetChunkList(db data.Database) gin.HandlerFunc {
+// CheckFileStatus is a function that returns the status of the file in the server.
+func CheckFileStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
 		name := c.Query("name")
@@ -190,8 +190,8 @@ func GetChunkList(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// PostChunk is functions for receiving file slices.
-func PostChunk(db data.Database) gin.HandlerFunc {
+// PostSingleChunk is functions for receiving file slices.
+func PostSingleChunk(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.PostForm("hash")
 		name := c.PostForm("name")
@@ -234,8 +234,8 @@ func PostChunk(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// GetMergeFile get instructions for receiving combined files.
-func GetMergeFile(db data.Database) gin.HandlerFunc {
+// MergeTargetFile get instructions for receiving combined files.
+func MergeTargetFile(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
 		name := c.Query("name")
@@ -301,8 +301,8 @@ func GetFilesList(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// GetFile is the handler function for file download.
-func GetFile(db data.Database) gin.HandlerFunc {
+// DownloadFile is the handler function for file download.
+func DownloadFile(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
 		name := c.Query("name")

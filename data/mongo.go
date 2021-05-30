@@ -10,7 +10,7 @@ import (
 
 const (
 	// ConnectCommand is the connection command to conncet with MongoDB.
-	ConnectCommand = "mongodb://127.0.0.1:27017"
+	ConnectCommand = "mongodb://admin:password@127.0.0.1:27017"
 	// DatabaseName is which database will be used.
 	DatabaseName = "labnote"
 )

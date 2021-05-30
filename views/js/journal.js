@@ -13,7 +13,7 @@ function loadAllNotes() {
     headers: {
       token: window.localStorage.getItem('token'),
     },
-    url: '/note',
+    url: '/journal/list',
     type: 'get',
     data: null,
     dataType: 'json',
@@ -94,7 +94,7 @@ $(document).ready(function () {
       headers: {
         token: window.localStorage.getItem('token'),
       },
-      url: '/write',
+      url: '/journal/write',
       type: 'post',
       data: formData,
       dataType: 'json',
