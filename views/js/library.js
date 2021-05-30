@@ -29,7 +29,7 @@ function loadAllFiles() {
     headers: {
       token: window.localStorage.getItem('token'),
     },
-    url: '/file',
+    url: '/library/list',
     type: 'get',
     data: null,
     dataType: 'json',
@@ -74,7 +74,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
     headers: {
       token: window.localStorage.getItem('token'),
     },
-    url: '/check',
+    url: '/library/check',
     type: 'get',
     async: false,
     data: 'hash=' + fileHash + '&name=' + fileName,
@@ -105,7 +105,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
             headers: {
               token: window.localStorage.getItem('token'),
             },
-            url: '/upload',
+            url: '/library/upload',
             type: 'post',
             data: formData,
             // FIXME: net::ERR_INSUFFICIENT_RESOURCES.
@@ -151,7 +151,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
       headers: {
         token: window.localStorage.getItem('token'),
       },
-      url: '/merge',
+      url: '/library/merge',
       type: 'get',
       data: 'hash=' + fileHash + '&name=' + fileName,
       async: false,
