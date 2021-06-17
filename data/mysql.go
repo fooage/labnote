@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	//MySQL's connection statement.
+	//DatabaseSource is MySQL's connection statement.
 	DatabaseSource = "root:password@tcp(127.0.0.1:3306)/labnote"
 )
 
+// Here is the definition of the database structure.
 type MySQL struct {
 	db *sql.DB
 }
@@ -21,8 +22,8 @@ func NewMySQL() *MySQL {
 	}
 }
 
-// InitDatabase function initialize the connection to the database.
-func (m *MySQL) InitDatabase() error {
+// InitConnection function initialize the connection to the database.
+func (m *MySQL) InitConnection() error {
 	conn, err := sql.Open("mysql", DatabaseSource)
 	if err != nil {
 		return err
@@ -36,8 +37,8 @@ func (m *MySQL) InitDatabase() error {
 	return nil
 }
 
-// CloseDatabase is a function close the connection with mongodb.
-func (m *MySQL) CloseDatabase() error {
+// CloseConnection is a function close the connection with mongodb.
+func (m *MySQL) CloseConnection() error {
 	err := m.db.Close()
 	if err != nil {
 		return err

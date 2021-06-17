@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/fooage/labnote/cache"
+	"log"
 	"os"
 
 	"github.com/fooage/labnote/data"
@@ -18,11 +20,19 @@ const (
 
 func main() {
 	// Initialize and close it after calling the used database constructor.
-	os.Mkdir(handler.FileStorageDirectory, os.ModePerm)
-	db := data.NewMongoDB()
-	data.ConnectDatabase(db)
+	if err := os.Mkdir(handler.FileStorageDirectory, os.ModePerm); err != nil {
+		log.Println(err)
+	}
+	mongodb := data.NewMongoDB()
+	redis := cache.NewRedis()
+	data.ConnectDatabase(mongodb)
+	cache.ConnectCache(redis)
 	gin.SetMode(gin.ReleaseMode)
-	svr := router.InitRouter(db)
-	svr.Run(ServerAddr)
-	data.DisconnectDatabase(db)
+	server := router.InitRouter(mongodb, redis)
+	if err := server.Run(ServerAddr); err != nil {
+		log.Println(err)
+		return
+	}
+	data.DisconnectDatabase(mongodb)
+	cache.DisconnectCache(redis)
 }

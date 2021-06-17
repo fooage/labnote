@@ -94,7 +94,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
   postRequset = [];
   chunkList = chunkList.map((e) => parseInt(e));
   sliceBuffer.forEach((buffer, i) => {
-    if (!chunkList.includes(String(i))) {
+    if (!chunkList.includes(i)) {
       const blob = new File([buffer], `${i}`);
       let formData = new FormData();
       formData.append('file', blob);
@@ -203,9 +203,11 @@ function uploadFile() {
     const fileReader = new FileReader();
     const spark = new SparkMD5.ArrayBuffer();
     let index = 0;
+
     function loadSlice() {
       fileReader.readAsArrayBuffer(sliceBuffer[index]);
     }
+
     loadSlice();
     fileReader.onload = async () => {
       spark.append(fileReader.result);

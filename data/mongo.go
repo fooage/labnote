@@ -28,8 +28,8 @@ func NewMongoDB() *MongoDB {
 	}
 }
 
-// InitDatabase function initialize the connection to the database.
-func (m *MongoDB) InitDatabase() error {
+// InitConnection function initialize the connection to the database.
+func (m *MongoDB) InitConnection() error {
 	opt := options.Client().ApplyURI(ConnectCommand)
 	// Change the port and connection method for connecting to the database according to the situation.
 	client, err := mongo.Connect(context.TODO(), opt)
@@ -47,8 +47,8 @@ func (m *MongoDB) InitDatabase() error {
 	return nil
 }
 
-// CloseDatabase is a function close the connection with mongodb.
-func (m *MongoDB) CloseDatabase() error {
+// CloseConnection is a function close the connection with mongodb.
+func (m *MongoDB) CloseConnection() error {
 	err := m.client.Disconnect(context.TODO())
 	if err != nil {
 		return err
