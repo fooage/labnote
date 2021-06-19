@@ -8,29 +8,26 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	// ConnectCommand is the connection command to conncet with MongoDB.
-	ConnectCommand = "mongodb://admin:password@127.0.0.1:27017"
-	// DatabaseName is which database will be used.
-	DatabaseName = "labnote"
-)
-
 // Here is the definition of the database structure.
 type MongoDB struct {
 	db     *mongo.Database
 	client *mongo.Client
+	cmd    string
+	name   string
 }
 
-func NewMongoDB() *MongoDB {
+func NewMongoDB(cmd string, name string) *MongoDB {
 	return &MongoDB{
 		db:     nil,
 		client: nil,
+		cmd:    cmd,
+		name:   name,
 	}
 }
 
 // InitConnection function initialize the connection to the database.
 func (m *MongoDB) InitConnection() error {
-	opt := options.Client().ApplyURI(ConnectCommand)
+	opt := options.Client().ApplyURI(m.cmd)
 	// Change the port and connection method for connecting to the database according to the situation.
 	client, err := mongo.Connect(context.TODO(), opt)
 	if err != nil {
@@ -40,7 +37,7 @@ func (m *MongoDB) InitConnection() error {
 	if err != nil {
 		return err
 	}
-	db := client.Database(DatabaseName)
+	db := client.Database(m.name)
 	// Init these variable of mongodb.
 	m.db = db
 	m.client = client

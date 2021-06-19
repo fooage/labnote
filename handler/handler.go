@@ -17,15 +17,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
+var (
 	// CookieExpireDuration is cookie's valid duration.
-	CookieExpireDuration = 7200
+	CookieExpireDuration int
 	// CookieAccessScope is cookie's scope.
-	CookieAccessScope = "127.0.0.1"
+	CookieAccessScope string
 	// FileStorageDirectory is where these files storage.
-	FileStorageDirectory = "./storage"
+	FileStorageDirectory string
 	// DownloadUrlBase decide the base url of file's url.
-	DownloadUrlBase = "http://127.0.0.1:8090/library/download"
+	DownloadUrlBase string
 )
 
 // GetJournalPage is a handler function which response the GET request for journal page.
@@ -252,8 +252,8 @@ func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 		complete, _ := os.OpenFile(path+"/"+name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
 		defer complete.Close()
 		for _, chunk := range *chunkList {
-			buffer, err := ioutil.ReadFile(path + "/" + strconv.Itoa(chunk.Index))
-			_, err = complete.Write(buffer)
+			buffer, _ := ioutil.ReadFile(path + "/" + strconv.Itoa(chunk.Index))
+			_, _ = complete.Write(buffer)
 			err = os.Remove(path + "/" + strconv.Itoa(chunk.Index))
 			if err != nil {
 				// If an error occurs when merging files, delete the temporary files that are not fully merged.

@@ -6,25 +6,24 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	//DatabaseSource is MySQL's connection statement.
-	DatabaseSource = "root:password@tcp(127.0.0.1:3306)/labnote"
-)
-
 // Here is the definition of the database structure.
 type MySQL struct {
-	db *sql.DB
+	db   *sql.DB
+	cmd  string
+	name string
 }
 
-func NewMySQL() *MySQL {
+func NewMySQL(cmd string, name string) *MySQL {
 	return &MySQL{
-		db: nil,
+		db:   nil,
+		cmd:  cmd,
+		name: name,
 	}
 }
 
 // InitConnection function initialize the connection to the database.
 func (m *MySQL) InitConnection() error {
-	conn, err := sql.Open("mysql", DatabaseSource)
+	conn, err := sql.Open("mysql", m.cmd+"/"+m.name)
 	if err != nil {
 		return err
 	}

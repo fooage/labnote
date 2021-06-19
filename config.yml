@@ -1,0 +1,35 @@
+server:
+  # The network address the server is running on.
+  host_address: 127.0.0.1
+  listen_port: 8090
+
+  handler:
+    # Cookie's valid duration the unit is seconds.
+    cookie_duration: 7200
+    # Cookie's determines that it can work in which domain.
+    access_scope: 127.0.0.1
+    # File's storage directory store files uploaded by users.
+    storage_directory: ./storage
+    # The default prefix when generating download links.
+    url_base: http://127.0.0.1:8090/library/download
+
+  token:
+    # Token's valid duration the unit is seconds.
+    token_duration: 7200
+    # Key used for token encryption.
+    encryption_key: 20180212
+    # The issuer of the token.
+    token_issuer: labnote
+
+database:
+  # Here you can choose between 'mysql' or 'mongo' options.
+  type: mongo
+  # Database connection command and selected database name.
+  command: mongodb://admin:password@127.0.0.1:27017
+  name: labnote
+
+cache:
+  address: 127.0.0.1:6379
+  password: ''
+  # This controls the size of the connection pool started by redis.
+  pool_size: 100
