@@ -17,15 +17,15 @@ const (
 	TokenIssuer = "labnote"
 )
 
-// Claims is my custom claims.
-type Claims struct {
+// Structure meta is my custom claims.
+type meta struct {
 	data.User
 	jwt.StandardClaims
 }
 
-// GenerateToken is a function which generates token.
-func GenerateToken(user data.User) (string, error) {
-	claims := Claims{
+// Function generateToken is a function which generates token.
+func generateToken(user data.User) (string, error) {
+	claims := meta{
 		user,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(),
@@ -36,15 +36,15 @@ func GenerateToken(user data.User) (string, error) {
 	return token.SignedString([]byte(EncryptionKey))
 }
 
-// ParseToken is a function which parse token.
-func ParseToken(key string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(key, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+// A auxiliary function which parse token.
+func parseToken(key string) (*meta, error) {
+	token, err := jwt.ParseWithClaims(key, &meta{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(EncryptionKey), nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+	if claims, ok := token.Claims.(*meta); ok && token.Valid {
 		return claims, nil
 	}
 	return nil, errors.New("token not found or invalid")

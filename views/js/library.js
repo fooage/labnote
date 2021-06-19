@@ -1,3 +1,12 @@
+// Function to control the color of upload button.
+function sumbitColor(method) {
+  if (method == 'success') {
+    $('#upload').removeClass('btn-danger').addClass('btn-success');
+  } else if (method == 'danger') {
+    $('#upload').removeClass('btn-success').addClass('btn-danger');
+  }
+}
+
 // Parse the date format in mongodb into a simple date format.
 function changeDateFormat(cellval) {
   let dateVal = cellval + '';
@@ -13,13 +22,14 @@ function changeDateFormat(cellval) {
     return date.getFullYear() + '-' + month + '-' + day;
   }
 }
+
 // Request to the server and refresh all files.
 function loadAllFiles() {
   $.ajax({
     headers: {
       token: window.localStorage.getItem('token'),
     },
-    url: '/file',
+    url: '/library/list',
     type: 'get',
     data: null,
     dataType: 'json',
@@ -43,26 +53,28 @@ function loadAllFiles() {
       }
     },
     error: function () {
-      $('#upload').removeClass('btn-success').addClass('btn-danger');
+      sumbitColor('danger');
     },
   });
 }
+
 // Function to control the refresh of the progress bar.
-function updateProgress(per) {
-  // FIXME: To solve the problem of dom.
+function updateProgress(now, all) {
+  let per = ((now * 1.0) / all) * 100;
+  per = Math.round(per);
   $('#progress').attr('style', 'width: ' + per + '%');
   $('#progress').attr('aria-valuenow', per);
 }
+
 // The real multi-part upload function.
-function uploadFile(fileHash, fileName, sliceBuffer) {
-  let flag = true;
+async function postChunks(fileHash, fileName, sliceBuffer) {
   let chunkList = [];
   let state = false;
   $.ajax({
     headers: {
       token: window.localStorage.getItem('token'),
     },
-    url: '/check',
+    url: '/library/check',
     type: 'get',
     async: false,
     data: 'hash=' + fileHash + '&name=' + fileName,
@@ -72,142 +84,166 @@ function uploadFile(fileHash, fileName, sliceBuffer) {
       state = data.state;
     },
     error: function () {
-      $('#upload').removeClass('btn-success').addClass('btn-danger');
-      flag = false;
+      sumbitColor('danger');
     },
   });
-  // Exit early if there is a network error.
-  if (flag == false) {
-    return true;
-  }
   // If the upload is complete, return directly.
   if (state == true) {
-    updateProgress(100);
-    return state;
+    return true;
   }
-  let percent = 0;
+  postRequset = [];
   chunkList = chunkList.map((e) => parseInt(e));
   sliceBuffer.forEach((buffer, i) => {
-    if (state == true) {
-      return state;
-    }
-    if (!chunkList.includes(String(i))) {
+    if (!chunkList.includes(i)) {
       const blob = new File([buffer], `${i}`);
       let formData = new FormData();
       formData.append('file', blob);
       formData.append('hash', fileHash);
-      $.ajax({
-        headers: {
-          token: window.localStorage.getItem('token'),
-        },
-        url: '/upload',
-        type: 'post',
-        data: formData,
-        async: false,
-        cache: false,
-        processData: false,
-        contentType: false,
-        success: function (data) {
-          state = data.state;
-          chunkList = data.list;
-        },
-        error: function () {
-          $('#upload').removeClass('btn-success').addClass('btn-danger');
-          state = false;
-        },
-      });
-    }
-    percent = (chunkList.length * 100) / sliceBuffer.length;
-    updateProgress(percent);
-    // Alert the server to merge the file.
-    if (chunkList.length == sliceBuffer.length && state == false) {
-      $.ajax({
-        headers: {
-          token: window.localStorage.getItem('token'),
-        },
-        url: '/merge',
-        type: 'get',
-        data: 'hash=' + fileHash + '&name=' + fileName,
-        async: false,
-        dataType: 'json',
-        success: function (data) {
-          state = data.state;
-        },
-        error: function () {
-          $('#upload').removeClass('btn-success').addClass('btn-danger');
-          state = false;
-        },
-      });
+      postRequset.push(
+        new Promise((resolve, reject) => {
+          $.ajax({
+            headers: {
+              token: window.localStorage.getItem('token'),
+            },
+            url: '/library/upload',
+            type: 'post',
+            data: formData,
+            // FIXME: net::ERR_INSUFFICIENT_RESOURCES.
+            async: true,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+              resolve({
+                nums: data.nums,
+                state: data.state,
+              });
+            },
+            error: function () {
+              reject({
+                data: null,
+              });
+            },
+          }).then(function (data) {
+            requestAnimationFrame(
+              updateProgress(data.nums, sliceBuffer.length)
+            );
+          });
+        })
+      );
     }
   });
-  // If the upload is incomplete, upload again.
+  let received = 0;
+  await Promise.all(postRequset)
+    .then(function (result) {
+      for (let i = 0; i < result.length; i++) {
+        state = result[i].state;
+        received = Math.max(received, result[i].nums);
+      }
+      sumbitColor('success');
+    })
+    .catch(function () {
+      sumbitColor('danger');
+    });
+  // Alert the server to merge the file.
+  if (received == sliceBuffer.length && state == false) {
+    $.ajax({
+      headers: {
+        token: window.localStorage.getItem('token'),
+      },
+      url: '/library/merge',
+      type: 'get',
+      data: 'hash=' + fileHash + '&name=' + fileName,
+      async: false,
+      dataType: 'json',
+      success: function (data) {
+        state = data.state;
+      },
+      error: function () {
+        sumbitColor('danger');
+        state = false;
+      },
+    });
+  }
   return state;
 }
+
+// Calculate the file hash value and upload the file.
+function uploadFile() {
+  const file = $('#file')[0].files[0];
+  if (file.size == 0) {
+    sumbitColor('danger');
+    return;
+  }
+  const chunkSize = 2 * 1024 * 1024;
+  const chunkTotal = Math.ceil(file.size / chunkSize);
+  const sliceBuffer = [];
+  for (let i = 0; i < chunkTotal; i++) {
+    const blobPart = file.slice(
+      sliceBuffer.length * chunkSize,
+      Math.min((sliceBuffer.length + 1) * chunkSize, file.size)
+    );
+    sliceBuffer.push(blobPart);
+  }
+  let hash = window.localStorage.getItem(file.name + ' ' + file.size);
+  // If there is already a calculated Hash, then transfer it directly.
+  if (hash != null) {
+    (async () => {
+      for (let now = 0; now < 3; now++) {
+        let state = await postChunks(hash, file.name, sliceBuffer);
+        if (state == true) {
+          loadAllFiles();
+          requestAnimationFrame(updateProgress(100, 100));
+          sumbitColor('success');
+          return;
+        }
+      }
+    })();
+  } else {
+    const fileReader = new FileReader();
+    const spark = new SparkMD5.ArrayBuffer();
+    let index = 0;
+
+    function loadSlice() {
+      fileReader.readAsArrayBuffer(sliceBuffer[index]);
+    }
+
+    loadSlice();
+    fileReader.onload = async () => {
+      spark.append(fileReader.result);
+      index += 1;
+      if (index < sliceBuffer.length) {
+        loadSlice();
+      } else {
+        hash = spark.end();
+        window.localStorage.setItem(file.name + ' ' + file.size, hash);
+        sumbitColor('success');
+        // Begin to check these chunk's state in server.
+        for (let now = 0; now < 3; now++) {
+          let state = await postChunks(hash, file.name, sliceBuffer);
+          if (state == true) {
+            loadAllFiles();
+            requestAnimationFrame(updateProgress(100, 100));
+            sumbitColor('success');
+            return;
+          }
+        }
+      }
+    };
+  }
+}
+
 $(document).ready(function () {
   loadAllFiles();
+
   // Simulate clicking the select file button.
   $('#choose').on('click', function () {
     $('#file').click();
   });
+
   // Upload the file you had choosen.
   $('#upload').on('click', function () {
-    updateProgress(0);
-    const file = $('#file')[0].files[0];
-    if (file.size == 0) {
-      $('#upload').removeClass('btn-success').addClass('btn-danger');
-      return;
-    }
-    const chunkSize = 2 * 1024 * 1024;
-    const chunkTotal = Math.ceil(file.size / chunkSize);
-    const sliceBuffer = [];
-    for (let i = 0; i < chunkTotal; i++) {
-      const blobPart = file.slice(
-        sliceBuffer.length * chunkSize,
-        Math.min((sliceBuffer.length + 1) * chunkSize, file.size)
-      );
-      sliceBuffer.push(blobPart);
-    }
-    let hash = window.localStorage.getItem(file.name + ' ' + file.size);
-    // If there is already a calculated Hash, then transfer it directly.
-    if (hash != null) {
-      while (true) {
-        let state = uploadFile(hash, file.name, sliceBuffer);
-        if (state == true) {
-          loadAllFiles();
-          updateProgress(100);
-          $('#upload').removeClass('btn-danger').addClass('btn-success');
-          break;
-        }
-      }
-    } else {
-      const fileReader = new FileReader();
-      const spark = new SparkMD5.ArrayBuffer();
-      let index = 0;
-      fileReader.onload = function () {
-        spark.append(fileReader.result);
-        index += 1;
-        if (index < sliceBuffer.length) {
-          loadNext();
-        } else {
-          hash = spark.end();
-          window.localStorage.setItem(file.name + ' ' + file.size, hash);
-          $('#upload').removeClass('btn-danger').addClass('btn-success');
-          // Begin to check these chunk's state in server.
-          while (true) {
-            let state = uploadFile(hash, file.name, sliceBuffer);
-            if (state == true) {
-              loadAllFiles();
-              updateProgress(100);
-              $('#upload').removeClass('btn-danger').addClass('btn-success');
-              break;
-            }
-          }
-        }
-      };
-      function loadNext() {
-        fileReader.readAsArrayBuffer(sliceBuffer[index]);
-      }
-      loadNext();
-    }
+    updateProgress(0, 100);
+    uploadFile();
   });
 });

@@ -1,13 +1,11 @@
 package data
 
-import "fmt"
-
-// The definition of the abstract interface of the database.
+// Database definition of the abstract interface of it.
 type Database interface {
 	// The init function of this database.
-	InitDatabase() error
+	InitConnection() error
 	// The close function of this database.
-	CloseDatabase() error
+	CloseConnection() error
 	// Verify that the user information is reasonable.
 	CheckUserAuth(user *User) (bool, error)
 	// Insert one note to this labnote system.
@@ -21,19 +19,19 @@ type Database interface {
 }
 
 // ConnectDatabase is function which load the database.
-func ConnectDatabase(data Database) {
-	err := data.InitDatabase()
+func ConnectDatabase(data Database) error {
+	err := data.InitConnection()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
+	return nil
 }
 
 // DisconnectDatabase is function which disconnect the database.
-func DisconnectDatabase(data Database) {
-	err := data.CloseDatabase()
+func DisconnectDatabase(data Database) error {
+	err := data.CloseConnection()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
+	return nil
 }
