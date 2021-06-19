@@ -6,24 +6,24 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	//MySQL's connection statement.
-	DatabaseSource = "root:password@tcp(127.0.0.1:3306)/labnote"
-)
-
+// Here is the definition of the database structure.
 type MySQL struct {
-	db *sql.DB
+	db   *sql.DB
+	cmd  string
+	name string
 }
 
-func NewMySQL() *MySQL {
+func NewMySQL(cmd string, name string) *MySQL {
 	return &MySQL{
-		db: nil,
+		db:   nil,
+		cmd:  cmd,
+		name: name,
 	}
 }
 
-// InitDatabase function initialize the connection to the database.
-func (m *MySQL) InitDatabase() error {
-	conn, err := sql.Open("mysql", DatabaseSource)
+// InitConnection function initialize the connection to the database.
+func (m *MySQL) InitConnection() error {
+	conn, err := sql.Open("mysql", m.cmd+"/"+m.name)
 	if err != nil {
 		return err
 	}
@@ -36,8 +36,8 @@ func (m *MySQL) InitDatabase() error {
 	return nil
 }
 
-// CloseDatabase is a function close the connection with mongodb.
-func (m *MySQL) CloseDatabase() error {
+// CloseConnection is a function close the connection with mongodb.
+func (m *MySQL) CloseConnection() error {
 	err := m.db.Close()
 	if err != nil {
 		return err

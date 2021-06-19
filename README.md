@@ -8,44 +8,42 @@ Not many things are used, so it is fairly easy to deploy, mainly divided into tw
 
 There are a number of parameterized options available for customization, such as server port address, token encryption keys, and more.
 
-```go
-// main.go
-const (
-	// ServerAddr is http service connection address and port.
-	ServerAddr = "127.0.0.1:8090"
-)
-// token.go
-const (
-	// TokenExpireDuration is token's valid duration.
-	TokenExpireDuration = time.Hour * 2
-	// EncryptionKey used for encryption.
-	EncryptionKey = "20180212"
-	// TokenIssuer is the token's provider.
-	TokenIssuer = "labnote"
-)
-// handler.go
-const (
-	// CookieExpireDuration is cookie's valid duration.
-	CookieExpireDuration = 7200
-	// CookieAccessScope is cookie's scope.
-	CookieAccessScope = "127.0.0.1"
-	// FileStorageDirectory is where these files storage.
-	FileStorageDirectory = "./storage"
-	// DownloadUrlBase decide the base url of file's url.
-	DownloadUrlBase = "http://127.0.0.1:8090/download"
-)
-// mongo.go
-const (
-	// ConnectCommand is the connection command to conncet with MongoDB.
-	ConnectCommand = "mongodb://127.0.0.1:27017"
-	// DatabaseName is which database will be used.
-	DatabaseName = "labnote"
-)
-// mysql.go
-const (
-	//MySQL's connection statement.
-	Dsn = "root:256275@tcp(127.0.0.1:3306)/labnote?charset=utf8mb4&parseTime=True"
-)
+```yaml
+server:
+  # The network address the server is running on.
+  host_address: 127.0.0.1
+  listen_port: 8090
+
+  handler:
+    # Cookie's valid duration the unit is seconds.
+    cookie_duration: 7200
+    # Cookie's determines that it can work in which domain.
+    access_scope: 127.0.0.1
+    # File's storage directory store files uploaded by users.
+    storage_directory: ./storage
+    # The default prefix when generating download links.
+    url_base: http://127.0.0.1:8090/library/download
+
+  token:
+    # Token's valid duration the unit is seconds.
+    token_duration: 7200
+    # Key used for token encryption.
+    encryption_key: 20180212
+    # The issuer of the token.
+    token_issuer: labnote
+
+database:
+  # Here you can choose between 'mysql' or 'mongo' options.
+  type: mongo
+  # Database connection command and selected database name.
+  command: mongodb://admin:password@127.0.0.1:27017
+  name: labnote
+
+cache:
+  address: 127.0.0.1:6379
+  password: ''
+  # This controls the size of the connection pool started by redis.
+  pool_size: 100
 ```
 
 Resumable uploads are also provided, you can change the file blocks size according to your network environment.
@@ -83,12 +81,12 @@ This project is open source, welcome to customize the code and feedback question
 In addition to providing some parameters, data interfaces are provided for use in different databases.
 
 ```go
-// The definition of the abstract interface of the database.
+// Database definition of the abstract interface of it.
 type Database interface {
 	// The init function of this database.
-	InitDatabase() error
+	InitConnection() error
 	// The close function of this database.
-	CloseDatabase() error
+	CloseConnection() error
 	// Verify that the user information is reasonable.
 	CheckUserAuth(user *User) (bool, error)
 	// Insert one note to this labnote system.
@@ -102,13 +100,33 @@ type Database interface {
 }
 ```
 
-If you want to change the database which the server used, you can change `main.go` in this snippet.
+If you want to change the database which the server used, you can change `config.yml`.
+
+### Cache
+
+In order to quickly exchange data and facilitate the storage of file slice information, we use `redis` as a cache database.
 
 ```go
-db := data.NewMongoDB()
-// Change database to the other.
-db := data.NewMySQL()
+// Cache interface defines the functions of the cache.
+type Cache interface {
+	// Init function of this cache.
+	InitConnection() error
+	// Close function of this cache.
+	CloseConnection() error
+	// Insert a chunk info in a list which key is file's hash.
+	InsertOneChunk(hash string, chunk Chunk) error
+	// Get the chunks list in the cache.
+	GetChunkList(hash string, name string) (*[]Chunk, error)
+	// Remove all of chunks after merge or error.
+	RemoveAllChunks(hash string) error
+	// Init the file's state for the server check.
+	ChangeFileState(hash string, saved bool) error
+	// Check this file whether exist completely or not.
+	CheckFileUpload(hash string) (bool, error)
+}
 ```
+
+Like the interface provided by the database, you also can easily change the detail of functions and add functions you want.
 
 ### Problem
 

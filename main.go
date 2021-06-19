@@ -1,7 +1,12 @@
 package main
 
 import (
+	"log"
 	"os"
+
+	"github.com/fooage/labnote/cache"
+	"github.com/fooage/labnote/config"
+	"github.com/spf13/viper"
 
 	"github.com/fooage/labnote/data"
 	"github.com/fooage/labnote/handler"
@@ -11,18 +16,46 @@ import (
 
 // TODO: Change to a microservice architecture.
 
-const (
-	// ServerAddr is http service connection address and port.
-	ServerAddr = "127.0.0.1:8090"
+var (
+	// HostAddr is http service connection address and port.
+	HostAddress string
+	// The http server's listen port.
+	ListenPort string
 )
 
+// Initialize server address meta information.
+func init() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Panicln(err)
+		return
+	}
+	HostAddress = viper.GetString("server.host_address")
+	ListenPort = viper.GetString("server.listen_port")
+}
+
 func main() {
-	// Initialize and close it after calling the used database constructor.
-	os.Mkdir(handler.FileStorageDirectory, os.ModePerm)
-	db := data.NewMongoDB()
-	data.ConnectDatabase(db)
+	db, ch, err := config.LoadConfiguration()
+	if err != nil {
+		log.Println(err)
+		return
+	} else {
+		// Initialize and close it after calling the used database constructor.
+		if err := os.Mkdir(handler.FileStorageDirectory, os.ModePerm); err != nil {
+			log.Println(err)
+		}
+		data.ConnectDatabase(db)
+		defer data.DisconnectDatabase(db)
+		cache.ConnectCache(ch)
+		defer cache.DisconnectCache(ch)
+	}
 	gin.SetMode(gin.ReleaseMode)
-	svr := router.InitRouter(db)
-	svr.Run(ServerAddr)
-	data.DisconnectDatabase(db)
+	server := router.InitRouter(db, ch)
+	if err := server.Run(HostAddress + ":" + ListenPort); err != nil {
+		log.Println(err)
+		return
+	}
 }

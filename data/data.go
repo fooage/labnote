@@ -1,11 +1,11 @@
 package data
 
-// The definition of the abstract interface of the database.
+// Database definition of the abstract interface of it.
 type Database interface {
 	// The init function of this database.
-	InitDatabase() error
+	InitConnection() error
 	// The close function of this database.
-	CloseDatabase() error
+	CloseConnection() error
 	// Verify that the user information is reasonable.
 	CheckUserAuth(user *User) (bool, error)
 	// Insert one note to this labnote system.
@@ -20,7 +20,7 @@ type Database interface {
 
 // ConnectDatabase is function which load the database.
 func ConnectDatabase(data Database) error {
-	err := data.InitDatabase()
+	err := data.InitConnection()
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func ConnectDatabase(data Database) error {
 
 // DisconnectDatabase is function which disconnect the database.
 func DisconnectDatabase(data Database) error {
-	err := data.CloseDatabase()
+	err := data.CloseConnection()
 	if err != nil {
 		return err
 	}
