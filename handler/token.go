@@ -8,13 +8,13 @@ import (
 	"github.com/fooage/labnote/data"
 )
 
-const (
+var (
 	// TokenExpireDuration is token's valid duration.
-	TokenExpireDuration = time.Hour * 2
+	TokenExpireDuration time.Duration
 	// EncryptionKey used for encryption.
-	EncryptionKey = "20180212"
+	EncryptionKey string
 	// TokenIssuer is the token's provider.
-	TokenIssuer = "labnote"
+	TokenIssuer string
 )
 
 // Structure meta is my custom claims.

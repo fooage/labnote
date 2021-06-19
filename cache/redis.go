@@ -8,33 +8,30 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-const (
-	// ConnectionAddr is the host address of cache.
-	ConnectionAddr = "127.0.0.1:6379"
-	// ConnectionPassword is password of cache.
-	ConnectionPassword = ""
-	// MaxPoolSize set the max connection number.
-	MaxPoolSize = 100
-)
-
 // Here is the definition of the cache structure.
 type Redis struct {
-	client *redis.Client
+	client   *redis.Client
+	addr     string
+	password string
+	size     int
 }
 
-func NewRedis() *Redis {
+func NewRedis(addr string, password string, size int) *Redis {
 	return &Redis{
-		client: nil,
+		client:   nil,
+		addr:     addr,
+		password: password,
+		size:     size,
 	}
 }
 
 // InitConnection initialize redis connection settings.
 func (r *Redis) InitConnection() error {
 	r.client = redis.NewClient(&redis.Options{
-		Addr:     ConnectionAddr,
-		Password: ConnectionPassword,
+		Addr:     r.addr,
+		Password: r.password,
 		DB:       0,
-		PoolSize: MaxPoolSize,
+		PoolSize: r.size,
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
