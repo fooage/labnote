@@ -18,13 +18,13 @@ import (
 )
 
 var (
-	// CookieExpireDuration is cookie's valid duration.
+	// cookie's valid duration
 	CookieExpireDuration int
-	// CookieAccessScope is cookie's scope.
+	// cookie's scope
 	CookieAccessScope string
-	// FileStorageDirectory is where these files storage.
+	// where these files storage
 	FileStorageDirectory string
-	// DownloadUrlBase decide the base url of file's url.
+	// base url of file's url
 	DownloadUrlBase string
 )
 
@@ -49,7 +49,9 @@ func GetLibraryPage() gin.HandlerFunc {
 	}
 }
 
-// SubmitLoginData is a function responsible for receiving verification login information.
+// SubmitLoginData is a function responsible for receiving verification login
+// information. After verifying that the account and password are correct, cookies
+//  will be allocated and tokens will be generated.
 func SubmitLoginData(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
@@ -93,7 +95,7 @@ func GetNotesList(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// WriteUserNote is a function that receive the log submitted in the background.
+// WriteUserNote is a function that receive the log submitted to the server.
 func WriteUserNote(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		content := c.PostForm("content")
@@ -168,7 +170,8 @@ func CheckFileStatus(ch cache.Cache) gin.HandlerFunc {
 	}
 }
 
-// PostSingleChunk is functions for receiving file slices.
+// PostSingleChunk is functions for receiving file slices, and storage location
+// of a file slice depends on the hash value of the source file it belongs to.
 func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.PostForm("hash")
@@ -193,7 +196,6 @@ func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
-			// If there isn't a fixed path.
 			if !exist {
 				os.Mkdir(path, os.ModePerm)
 			}
@@ -218,7 +220,7 @@ func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
-			// Feedback the existing slices to the front.
+			// feedback the existing slices
 			c.JSON(http.StatusOK, gin.H{
 				"state": saved,
 				"nums":  len(*chunkList),
@@ -227,7 +229,9 @@ func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 	}
 }
 
-// MergeTargetFile get instructions for receiving combined files.
+// MergeTargetFile get instructions for receiving combined files. The redis
+// database is used to optimize the steps of obtaining file slice
+// information, and stitching is performed according to the file serial number.
 func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")
@@ -239,7 +243,7 @@ func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
-		// Merge the chunks to the file.
+		// merge the chunks to the file
 		chunkList, err := ch.GetChunkList(hash, name)
 		if err != nil {
 			log.Println(err)
@@ -256,14 +260,15 @@ func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 			_, _ = complete.Write(buffer)
 			err = os.Remove(path + "/" + strconv.Itoa(chunk.Index))
 			if err != nil {
-				// If an error occurs when merging files, delete the temporary files that are not fully merged.
+				// If an error occurs when merging files, delete the temporary
+				// files that are not fully merged.
 				log.Println(err)
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				os.Remove(path + "/" + name)
 				return
 			}
 		}
-		// Verify file integrity.
+		// verify file integrity
 		key, err := utils.EncodeFileHash(path, name)
 		if err != nil {
 			log.Println(err)
@@ -313,7 +318,8 @@ func GetFilesList(db data.Database) gin.HandlerFunc {
 	}
 }
 
-// DownloadFile is the handler function for file download.
+// DownloadFile is the handler function for file download. Just a simple
+// response to the browser's default request.
 func DownloadFile(db data.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hash := c.Query("hash")

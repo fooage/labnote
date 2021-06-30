@@ -17,13 +17,13 @@ import (
 // TODO: Change to a microservice architecture.
 
 var (
-	// HostAddr is http service connection address and port.
+	// http service connection address
 	HostAddress string
-	// The http server's listen port.
+	// http server's listen port
 	ListenPort string
 )
 
-// Initialize server address meta information.
+// Read the config file and initialize server address meta information.
 func init() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -52,6 +52,7 @@ func main() {
 		cache.ConnectCache(ch)
 		defer cache.DisconnectCache(ch)
 	}
+	// set the mode of engine
 	gin.SetMode(gin.ReleaseMode)
 	server := router.InitRouter(db, ch)
 	if err := server.Run(HostAddress + ":" + ListenPort); err != nil {

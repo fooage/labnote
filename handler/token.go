@@ -9,15 +9,14 @@ import (
 )
 
 var (
-	// TokenExpireDuration is token's valid duration.
+	// token's valid duration
 	TokenExpireDuration time.Duration
-	// EncryptionKey used for encryption.
+	// key used for encryption
 	EncryptionKey string
-	// TokenIssuer is the token's provider.
+	// token's provider
 	TokenIssuer string
 )
 
-// Structure meta is my custom claims.
 type meta struct {
 	data.User
 	jwt.StandardClaims
@@ -36,7 +35,7 @@ func generateToken(user data.User) (string, error) {
 	return token.SignedString([]byte(EncryptionKey))
 }
 
-// A auxiliary function which parse token.
+// A auxiliary function which parse token to get the claims information.
 func parseToken(key string) (*meta, error) {
 	token, err := jwt.ParseWithClaims(key, &meta{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(EncryptionKey), nil

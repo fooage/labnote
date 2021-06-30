@@ -27,7 +27,7 @@ func (m *MySQL) InitConnection() error {
 	if err != nil {
 		return err
 	}
-	// Init these variable of mongodb.
+	// init variable of mysql
 	m.db = conn
 	err = m.db.Ping()
 	if err != nil {

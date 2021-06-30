@@ -1,4 +1,5 @@
-// Function to control the color of login button.
+// Function to control the color of login button. If there are something wrong
+// with the login, it will turn red to alert the user.
 function loginColor(method) {
   if (method == 'success') {
     $('#submit').removeClass('btn-danger').addClass('btn-success');
@@ -8,7 +9,7 @@ function loginColor(method) {
 }
 
 $(document).ready(function () {
-  // Post the login data to the server.
+  // Post the login data to the server and control the redirect to the main pages.
   $('#login').on('click', function () {
     let formData = $('#form-login').serialize();
     $('input').val('');
@@ -19,12 +20,12 @@ $(document).ready(function () {
       dataType: 'json',
       success: function (data) {
         if (data.pass == true) {
-          // Login successfully and jump to the journal page.
+          // login successfully and jump to the journal page
           loginColor('success');
           window.localStorage.setItem('token', data.token);
           window.location.href = '/journal';
         } else {
-          // Change the color of the login button when the login fails.
+          // change the color of the login button when the login fails
           loginColor('danger');
         }
       },

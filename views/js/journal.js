@@ -1,4 +1,5 @@
-// Function to control the color of submit button.
+// Function to control the color of submit button the, if there is an error
+// happened it will turn red.
 function sumbitColor(method) {
   if (method == 'success') {
     $('#submit').removeClass('btn-danger').addClass('btn-success');
@@ -7,7 +8,8 @@ function sumbitColor(method) {
   }
 }
 
-// Request to the server and refresh all notes.
+// Request to the server and refresh all notes. I want to display the log list
+// in pages to prevent too much slow down the loading speed.
 function loadAllNotes() {
   $.ajax({
     headers: {
@@ -38,11 +40,11 @@ function loadAllNotes() {
   });
 }
 
-// Parse the date format in mongodb into a simple date format.
+// Parse the date format which in go's time.Time into a simple date format as 2021-06-30.
 function changeDateFormat(cellval) {
   let dateVal = cellval + '';
   if (cellval != null) {
-    // Use regular expressions.
+    // use regular expressions.
     let reg = new RegExp('.\\d{3}\\+\\d{4}$');
     let date = new Date(dateVal.replace(reg, '').replace('T', ' '));
     let month =
@@ -55,10 +57,8 @@ function changeDateFormat(cellval) {
 }
 
 $(document).ready(function () {
-  // Load all notes when the interface is loaded.
   loadAllNotes();
-
-  // Textarea adaptive height is supported.
+  // Determine the size of the input box according to the number of input lines.
   $('textarea')
     .each(function () {
       this.setAttribute(
@@ -70,8 +70,7 @@ $(document).ready(function () {
       this.style.height = 'auto';
       this.style.height = this.scrollHeight + 'px';
     });
-
-  // Support the tab key's use in textarea.
+  // Support the tab and enter key's use in textarea.
   $('textarea').on('keydown', function (e) {
     if (e.keyCode == 9) {
       e.preventDefault();
@@ -85,8 +84,7 @@ $(document).ready(function () {
       this.setSelectionRange(start + indent.length, start + selected.length);
     }
   });
-
-  // Function to add log items to the log list.
+  // Function to add log items to the whole log list.
   $('#submit').click(function () {
     let formData = $('#form-write').serialize();
     $('textarea').val('').height(24);
@@ -100,7 +98,7 @@ $(document).ready(function () {
       dataType: 'json',
       success: function () {
         sumbitColor('success');
-        // Get and refresh the log list after each submission.
+        // get the log list after each submission
         loadAllNotes();
       },
       error: function () {

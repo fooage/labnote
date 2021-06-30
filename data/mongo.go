@@ -28,7 +28,8 @@ func NewMongoDB(cmd string, name string) *MongoDB {
 // InitConnection function initialize the connection to the database.
 func (m *MongoDB) InitConnection() error {
 	opt := options.Client().ApplyURI(m.cmd)
-	// Change the port and connection method for connecting to the database according to the situation.
+	// Change the port and connection method for connecting to the database
+	// according to the situation.
 	client, err := mongo.Connect(context.TODO(), opt)
 	if err != nil {
 		return err
@@ -38,7 +39,7 @@ func (m *MongoDB) InitConnection() error {
 		return err
 	}
 	db := client.Database(m.name)
-	// Init these variable of mongodb.
+	// init variable of mongodb
 	m.db = db
 	m.client = client
 	return nil
@@ -93,7 +94,7 @@ func (m *MongoDB) GetAllNotes() (*[]Note, error) {
 		return nil, err
 	}
 	for cur.Next(context.TODO()) {
-		// Traverse all notes in the database.
+		// traverse all notes in database
 		var elem Note
 		err := cur.Decode(&elem)
 		if err != nil {

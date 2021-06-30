@@ -1,4 +1,5 @@
-// Function to control the color of upload button.
+// Function to control the color of upload button. It running as same as the
+// login button, the red is a symbol of error.
 function sumbitColor(method) {
   if (method == 'success') {
     $('#upload').removeClass('btn-danger').addClass('btn-success');
@@ -7,11 +8,11 @@ function sumbitColor(method) {
   }
 }
 
-// Parse the date format in mongodb into a simple date format.
+// Parse the date format which in go's time.Time into a simple date format as 2021-06-30.
 function changeDateFormat(cellval) {
   let dateVal = cellval + '';
   if (cellval != null) {
-    // Use regular expressions.
+    // use regular expressions
     let reg = new RegExp('.\\d{3}\\+\\d{4}$');
     let date = new Date(dateVal.replace(reg, '').replace('T', ' '));
     let month =
@@ -23,7 +24,8 @@ function changeDateFormat(cellval) {
   }
 }
 
-// Request to the server and refresh all files.
+// Request to the server and refresh the file-list for all of files. There are
+// a problem that if number of files is too large, it will load for a long time.
 function loadAllFiles() {
   $.ajax({
     headers: {
@@ -49,6 +51,7 @@ function loadAllFiles() {
           data.files[i].Name +
           '</a>';
         data.files[i].Url + '</span></div></div></li>';
+        // show the lastest file on the top
         $(addtion).prependTo('#file-list');
       }
     },
@@ -66,7 +69,9 @@ function updateProgress(now, all) {
   $('#progress').attr('aria-valuenow', per);
 }
 
-// The real multi-part upload function.
+// The real multi-part upload function, first request the file slices that the
+// server has received. Then add the untransmitted file slices to the asynchronous
+// transmission queue. The last step is check the stat of the file in server.
 async function postChunks(fileHash, fileName, sliceBuffer) {
   let chunkList = [];
   let state = false;
@@ -87,7 +92,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
       sumbitColor('danger');
     },
   });
-  // If the upload is complete, return directly.
+  // if the upload is complete return directly
   if (state == true) {
     return true;
   }
@@ -108,7 +113,6 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
             url: '/library/upload',
             type: 'post',
             data: formData,
-            // FIXME: net::ERR_INSUFFICIENT_RESOURCES.
             async: true,
             cache: false,
             processData: false,
@@ -133,6 +137,8 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
       );
     }
   });
+  // Use Promise to transfer file slices asynchronously and get the number of
+  // file slices to determine whether to merge files.
   let received = 0;
   await Promise.all(postRequset)
     .then(function (result) {
@@ -145,7 +151,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
     .catch(function () {
       sumbitColor('danger');
     });
-  // Alert the server to merge the file.
+  // alert the server to merge the file
   if (received == sliceBuffer.length && state == false) {
     $.ajax({
       headers: {
@@ -168,7 +174,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
   return state;
 }
 
-// Calculate the file hash value and upload the file.
+// Calculate the file hash value and upload the file, calculate MD5 code of file.
 function uploadFile() {
   const file = $('#file')[0].files[0];
   if (file.size == 0) {
@@ -186,7 +192,7 @@ function uploadFile() {
     sliceBuffer.push(blobPart);
   }
   let hash = window.localStorage.getItem(file.name + ' ' + file.size);
-  // If there is already a calculated Hash, then transfer it directly.
+  // If there is already a calculated Hash, then transfer it directly
   if (hash != null) {
     (async () => {
       for (let now = 0; now < 3; now++) {
@@ -203,11 +209,9 @@ function uploadFile() {
     const fileReader = new FileReader();
     const spark = new SparkMD5.ArrayBuffer();
     let index = 0;
-
     function loadSlice() {
       fileReader.readAsArrayBuffer(sliceBuffer[index]);
     }
-
     loadSlice();
     fileReader.onload = async () => {
       spark.append(fileReader.result);
@@ -218,7 +222,8 @@ function uploadFile() {
         hash = spark.end();
         window.localStorage.setItem(file.name + ' ' + file.size, hash);
         sumbitColor('success');
-        // Begin to check these chunk's state in server.
+        // Begin to check these chunk's state in server, if the transmission
+        // fails, try two more times.
         for (let now = 0; now < 3; now++) {
           let state = await postChunks(hash, file.name, sliceBuffer);
           if (state == true) {
@@ -235,13 +240,11 @@ function uploadFile() {
 
 $(document).ready(function () {
   loadAllFiles();
-
   // Simulate clicking the select file button.
   $('#choose').on('click', function () {
     $('#file').click();
   });
-
-  // Upload the file you had choosen.
+  // Upload the file you had choosen and reset the progress bar.
   $('#upload').on('click', function () {
     updateProgress(0, 100);
     uploadFile();

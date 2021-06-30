@@ -8,11 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// VerifyAuthority is a permission authentication middleware.
+// VerifyAuthority is a permission authentication middleware which verify the cookies.
 func VerifyAuthority() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if cookie, err := c.Cookie("auth"); err == nil {
-			// Find if there is a matching cookie here.
+			// find if there is a matching cookie
 			if cookie == "true" {
 				c.Next()
 				return
