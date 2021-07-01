@@ -129,9 +129,9 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
               });
             },
           }).then(function (data) {
-            requestAnimationFrame(
-              updateProgress(data.nums, sliceBuffer.length)
-            );
+            requestAnimationFrame(() => {
+              updateProgress(data.nums, sliceBuffer.length);
+            });
           });
         })
       );
@@ -199,13 +199,21 @@ function uploadFile() {
         let state = await postChunks(hash, file.name, sliceBuffer);
         if (state == true) {
           loadAllFiles();
-          requestAnimationFrame(updateProgress(100, 100));
+          requestAnimationFrame(() => {
+            updateProgress(100, 100);
+          });
           sumbitColor('success');
           return;
         }
       }
     })();
   } else {
+    requestAnimationFrame(() => {
+      $('#progress').removeClass('bg-success').addClass('bg-secondary');
+    });
+    requestAnimationFrame(() => {
+      updateProgress(100, 100);
+    });
     const fileReader = new FileReader();
     const spark = new SparkMD5.ArrayBuffer();
     let index = 0;
@@ -222,13 +230,21 @@ function uploadFile() {
         hash = spark.end();
         window.localStorage.setItem(file.name + ' ' + file.size, hash);
         sumbitColor('success');
+        requestAnimationFrame(() => {
+          $('#progress').removeClass('bg-secondary').addClass('bg-success');
+        });
+        requestAnimationFrame(() => {
+          updateProgress(0, 100);
+        });
         // Begin to check these chunk's state in server, if the transmission
         // fails, try two more times.
         for (let now = 0; now < 3; now++) {
           let state = await postChunks(hash, file.name, sliceBuffer);
           if (state == true) {
             loadAllFiles();
-            requestAnimationFrame(updateProgress(100, 100));
+            requestAnimationFrame(() => {
+              updateProgress(100, 100);
+            });
             sumbitColor('success');
             return;
           }
