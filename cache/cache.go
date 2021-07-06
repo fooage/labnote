@@ -19,7 +19,7 @@ type Cache interface {
 	// Get the chunks list in the cache.
 	GetChunkList(hash string, name string) (*[]Chunk, error)
 	// Remove all of chunks after merge or error.
-	RemoveAllChunks(hash string) error
+	RemoveAllRecords(hash string) error
 	// Init the file's state for the server check.
 	ChangeFileState(hash string, saved bool) error
 	// Check this file whether exist completely or not.
