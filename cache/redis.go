@@ -10,7 +10,8 @@ import (
 
 // Here is the definition of the cache structure.
 type Redis struct {
-	client   *redis.Client
+	chunk    *redis.Client
+	state    *redis.Client
 	addr     string
 	password string
 	size     int
@@ -18,7 +19,8 @@ type Redis struct {
 
 func NewRedis(addr string, password string, size int) *Redis {
 	return &Redis{
-		client:   nil,
+		chunk:    nil,
+		state:    nil,
 		addr:     addr,
 		password: password,
 		size:     size,
@@ -27,21 +29,34 @@ func NewRedis(addr string, password string, size int) *Redis {
 
 // InitConnection initialize redis connection settings.
 func (r *Redis) InitConnection() error {
-	r.client = redis.NewClient(&redis.Options{
+	r.chunk = redis.NewClient(&redis.Options{
 		Addr:     r.addr,
 		Password: r.password,
 		DB:       0,
 		PoolSize: r.size,
 	})
+	r.state = redis.NewClient(&redis.Options{
+		Addr:     r.addr,
+		Password: r.password,
+		DB:       1,
+		PoolSize: r.size,
+	})
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	_, err := r.client.Ping(ctx).Result()
-	return err
+	_, err := r.chunk.Ping(ctx).Result()
+	if err != nil {
+		return err
+	}
+	_, err = r.state.Ping(ctx).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // CloseConnection close the connection with the cache.
 func (r *Redis) CloseConnection() error {
-	err := r.client.Close()
+	err := r.chunk.Close()
 	return err
 }
 
@@ -49,7 +64,7 @@ func (r *Redis) CloseConnection() error {
 func (r *Redis) InsertOneChunk(hash string, chunk Chunk) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	_, err := r.client.SAdd(ctx, hash+"1", chunk.Index).Result()
+	_, err := r.chunk.SAdd(ctx, hash, chunk.Index).Result()
 	if err != nil {
 		return err
 	}
@@ -60,7 +75,7 @@ func (r *Redis) InsertOneChunk(hash string, chunk Chunk) error {
 func (r *Redis) GetChunkList(hash string, name string) (*[]Chunk, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	res, err := r.client.SMembers(ctx, hash+"1").Result()
+	res, err := r.chunk.SMembers(ctx, hash).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +91,15 @@ func (r *Redis) GetChunkList(hash string, name string) (*[]Chunk, error) {
 	return &chunks, nil
 }
 
-//	RemoveAllChunks is a function which run after merge or error.
-func (r *Redis) RemoveAllChunks(hash string) error {
+//	RemoveAllRecords is a function which run after merge or error.
+func (r *Redis) RemoveAllRecords(hash string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	_, err := r.client.Del(ctx, hash+"1").Result()
+	_, err := r.chunk.Del(ctx, hash).Result()
+	if err != nil {
+		return err
+	}
+	_, err = r.state.Del(ctx, hash).Result()
 	if err != nil {
 		return err
 	}
@@ -91,7 +110,7 @@ func (r *Redis) RemoveAllChunks(hash string) error {
 func (r *Redis) ChangeFileState(hash string, saved bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	_, err := r.client.Set(ctx, hash+"0", saved, 0).Result()
+	_, err := r.state.Set(ctx, hash, saved, 0).Result()
 	if err != nil {
 		return err
 	}
@@ -102,7 +121,7 @@ func (r *Redis) ChangeFileState(hash string, saved bool) error {
 func (r *Redis) CheckFileUpload(hash string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	res, err := r.client.Get(ctx, hash+"0").Result()
+	res, err := r.state.Get(ctx, hash).Result()
 	if err != nil {
 		return false, err
 	}

@@ -281,7 +281,7 @@ func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 				return
 			}
 			_ = ch.ChangeFileState(hash, true)
-			if err = ch.RemoveAllChunks(hash); err != nil {
+			if err = ch.RemoveAllRecords(hash); err != nil {
 				log.Println(err)
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"state": true,
