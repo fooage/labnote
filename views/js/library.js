@@ -99,16 +99,16 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
       let formData = new FormData();
       formData.append('file', blob);
       formData.append('hash', fileHash);
+      formData.append('name', fileName);
       postRequset.push(
         new Promise((resolve, reject) => {
           $.ajax({
             headers: {
               token: window.localStorage.getItem('token'),
             },
-            url: '/library/upload',
+            url: '/library/upload' + '?hash=' + fileHash + '&name=' + fileName,
             type: 'post',
             data: formData,
-            // FIXME: net::ERR_INSUFFICIENT_RESOURCES.
             async: true,
             cache: false,
             processData: false,

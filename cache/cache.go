@@ -1,13 +1,5 @@
 package cache
 
-// Chunk is the definition of a part of file.
-// Remember the 'Hash' in this structure from the file not this hash.
-type Chunk struct {
-	Name  string // name of the file this chunk belongs to.
-	Hash  string // file hash to which this chunk belongs.
-	Index int    // index of chunk in the file.
-}
-
 // Cache interface defines the functions of the cache.
 type Cache interface {
 	// Init function of this cache.
@@ -24,6 +16,10 @@ type Cache interface {
 	ChangeFileState(hash string, saved bool) error
 	// Check this file whether exist completely or not.
 	CheckFileUpload(hash string) (bool, error)
+	// Initialize the location of this file for reverse.
+	InitFileLocation(hash string, addr string) error
+	// Get the storage location of the file and get where it is.
+	GetFileLocation(hash string) (string, error)
 }
 
 // ConnectCache is function which load the database.

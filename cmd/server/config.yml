@@ -1,9 +1,11 @@
 server:
-  # The network address the server is running on.
-  host_address: 127.0.0.1
-  listen_port: 8090
-
+  # If you use a proxy for multi-machine deployment, you need to change the
+  # address settings and port settings, and set the proxy server address and
+  # select an appropriate timeout duration.
   handler:
+    # The network address the server is running on.
+    host_address: 127.0.0.1
+    listen_port: 8090
     # Cookie's valid duration the unit is seconds.
     cookie_duration: 7200
     # Cookie's determines that it can work in which domain.
@@ -20,6 +22,13 @@ server:
     encryption_key: 20180212
     # The issuer of the token.
     token_issuer: labnote
+
+  proxy:
+    proxy_address: 127.0.0.1:11000
+    # Choose whether use the proxy server.
+    use_proxy: true
+    # Timeout duration of the registry.
+    timeout: 120
 
 database:
   # Here you can choose between 'mysql' or 'mongo' options.

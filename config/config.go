@@ -6,11 +6,12 @@ import (
 	"github.com/fooage/labnote/cache"
 	"github.com/fooage/labnote/data"
 	"github.com/fooage/labnote/handler"
+	"github.com/fooage/labnote/proxy"
 	"github.com/spf13/viper"
 )
 
-// LoadConfiguration read the server-related setting information from the configuration file.
-func LoadConfiguration() (data.Database, cache.Cache, error) {
+// ServerConfiguration read the server-related setting information from the configuration file.
+func ServerConfiguration() (data.Database, cache.Cache, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -18,14 +19,10 @@ func LoadConfiguration() (data.Database, cache.Cache, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	// Read in database and cache setting information.
-	databaseType := viper.GetString("database.type")
-	databaseCommand := viper.GetString("database.command")
-	databaseName := viper.GetString("database.name")
-	cacheAddress := viper.GetString("cache.address")
-	cachePassword := viper.GetString("cache.password")
-	cachePoolSize := viper.GetInt("cache.pool_size")
-	// Settings, such as cookie expiration time, scope, url prefix, token settings.
+	// Read in database and cache setting information. Settings, such as cookie
+	// expiration time, scope, url prefix, token settings.
+	handler.HostAddress = viper.GetString("server.handler.host_address")
+	handler.ListenPort = viper.GetString("server.handler.listen_port")
 	handler.CookieExpireDuration = viper.GetInt("server.handler.cookie_duration")
 	handler.CookieAccessScope = viper.GetString("server.handler.access_scope")
 	handler.FileStorageDirectory = viper.GetString("server.handler.storage_directory")
@@ -33,17 +30,50 @@ func LoadConfiguration() (data.Database, cache.Cache, error) {
 	handler.TokenExpireDuration = time.Second * time.Duration(viper.GetInt64("server.token.token_duration"))
 	handler.EncryptionKey = viper.GetString("server.token.encryption_key")
 	handler.TokenIssuer = viper.GetString("server.token.token_issuer")
+	// The Settings of proxy server's connect information.
+	proxy.ProxyAddress = viper.GetString("server.proxy.proxy_address")
+	proxy.UseProxy = viper.GetBool("server.proxy.use_proxy")
+	proxy.Timeout = time.Second * time.Duration(viper.GetInt64("server.proxy.timeout"))
 	// Generate database and cache database objects and return.
 	var db data.Database
 	var ch cache.Cache
-	switch databaseType {
+	switch viper.GetString("database.type") {
 	case "mongo":
-		db = data.NewMongoDB(databaseCommand, databaseName)
+		db = data.NewMongoDB(viper.GetString("database.command"), viper.GetString("database.name"))
 	case "mysql":
-		db = data.NewMySQL(databaseCommand, databaseName)
+		db = data.NewMySQL(viper.GetString("database.command"), viper.GetString("database.name"))
 	default:
 		db = nil
 	}
-	ch = cache.NewRedis(cacheAddress, cachePassword, cachePoolSize)
+	ch = cache.NewRedis(viper.GetString("cache.address"), viper.GetString("cache.password"), viper.GetInt("cache.pool_size"))
+	return db, ch, nil
+}
+
+// Load the configuration information of the reverse proxy.
+func ProxyConfiguration() (data.Database, cache.Cache, error) {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		return nil, nil, err
+	}
+	// Read in database and cache setting information. Reverse proxy server configuration.
+	proxy.HostAddress = viper.GetString("proxy.universal.host_address")
+	proxy.ListenPort = viper.GetString("proxy.universal.listen_port")
+	proxy.Timeout = time.Second * time.Duration(viper.GetInt64("proxy.registry.timeout"))
+	proxy.HttpVersion = viper.GetString("proxy.universal.http_version")
+	// Generate database and cache database objects and return.
+	var db data.Database
+	var ch cache.Cache
+	switch viper.GetString("database.type") {
+	case "mongo":
+		db = data.NewMongoDB(viper.GetString("database.command"), viper.GetString("database.name"))
+	case "mysql":
+		db = data.NewMySQL(viper.GetString("database.command"), viper.GetString("database.name"))
+	default:
+		db = nil
+	}
+	ch = cache.NewRedis(viper.GetString("cache.address"), viper.GetString("cache.password"), viper.GetInt("cache.pool_size"))
 	return db, ch, nil
 }
