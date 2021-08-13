@@ -10,8 +10,16 @@ import (
 
 // Here is the definition of the cache structure.
 type Redis struct {
-	chunk    *redis.Client
-	state    *redis.Client
+	// A cache database used to record the slice serial number of the file
+	//  currently being transferred. It will be deleted after transfer.
+	chunk *redis.Client
+	// A cache database of the file transfer status, it will be deleted after
+	//  the file transfer is complete.
+	state *redis.Client
+	// A cache server that permanently stores the storage location of files.
+	// TODO: The cache server will synchronize with the relational database in
+	// the future. But I don't know if this is necessary.
+	location *redis.Client
 	addr     string
 	password string
 	size     int
@@ -21,6 +29,7 @@ func NewRedis(addr string, password string, size int) *Redis {
 	return &Redis{
 		chunk:    nil,
 		state:    nil,
+		location: nil,
 		addr:     addr,
 		password: password,
 		size:     size,
@@ -41,6 +50,12 @@ func (r *Redis) InitConnection() error {
 		DB:       1,
 		PoolSize: r.size,
 	})
+	r.location = redis.NewClient(&redis.Options{
+		Addr:     r.addr,
+		Password: r.password,
+		DB:       2,
+		PoolSize: r.size,
+	})
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := r.chunk.Ping(ctx).Result()
@@ -51,13 +66,28 @@ func (r *Redis) InitConnection() error {
 	if err != nil {
 		return err
 	}
+	_, err = r.location.Ping(ctx).Result()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 // CloseConnection close the connection with the cache.
 func (r *Redis) CloseConnection() error {
 	err := r.chunk.Close()
-	return err
+	if err != nil {
+		return err
+	}
+	err = r.state.Close()
+	if err != nil {
+		return err
+	}
+	err = r.location.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // InsertOneChunk is a function insert one chunk in the cache.
@@ -127,4 +157,26 @@ func (r *Redis) CheckFileUpload(hash string) (bool, error) {
 	}
 	exist, _ := strconv.ParseBool(res)
 	return exist, nil
+}
+
+// InitFileLocation initialize the location of this file when the frist time it comes.
+func (r *Redis) InitFileLocation(hash string, addr string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	_, err := r.location.Set(ctx, hash, addr, 0).Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetFileLocation able to get the file in which server.
+func (r *Redis) GetFileLocation(hash string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	res, err := r.location.Get(ctx, hash).Result()
+	if err != nil {
+		return "", err
+	}
+	return res, nil
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/fooage/labnote/cache"
 	"github.com/fooage/labnote/config"
-	"github.com/spf13/viper"
+	"github.com/fooage/labnote/proxy"
 
 	"github.com/fooage/labnote/data"
 	"github.com/fooage/labnote/handler"
@@ -16,29 +16,8 @@ import (
 
 // TODO: Change to a microservice architecture.
 
-var (
-	// http service connection address
-	HostAddress string
-	// http server's listen port
-	ListenPort string
-)
-
-// Read the config file and initialize server address meta information.
-func init() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Panicln(err)
-		return
-	}
-	HostAddress = viper.GetString("server.host_address")
-	ListenPort = viper.GetString("server.listen_port")
-}
-
 func main() {
-	db, ch, err := config.LoadConfiguration()
+	db, ch, err := config.ServerConfiguration()
 	if err != nil {
 		log.Println(err)
 		return
@@ -52,10 +31,12 @@ func main() {
 		cache.ConnectCache(ch)
 		defer cache.DisconnectCache(ch)
 	}
-	// set the mode of engine
-	gin.SetMode(gin.ReleaseMode)
+	// Start sending requests to proxy server, if the proxy server option is
+	// checked. If there is no proxy server, server can be run independently.
+	proxy.SendHeartbeat(handler.HostAddress + ":" + handler.ListenPort)
+	gin.SetMode(gin.DebugMode)
 	server := router.InitRouter(db, ch)
-	if err := server.Run(HostAddress + ":" + ListenPort); err != nil {
+	if err := server.Run(handler.HostAddress + ":" + handler.ListenPort); err != nil {
 		log.Println(err)
 		return
 	}

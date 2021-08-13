@@ -1,0 +1,26 @@
+proxy:
+  # When using a proxy, static files will be loaded by the proxy server, and be
+  # sure to select a suitable timeout period to ensure the stability of the system.
+  universal:
+    # The network address the proxy is running on.
+    host_address: 127.0.0.1
+    listen_port: 11000
+    # The http version of this proxy such as "http" and "https".
+    http_version: 'http'
+  registry:
+    # Timeout duration of the registry.
+    timeout: 120
+
+database:
+  # Here you can choose between 'mysql' or 'mongo' options.
+  type: mongo
+  # Database connection command and selected database name.
+  command: mongodb://admin:password@127.0.0.1:27017
+  name: labnote
+
+cache:
+  # Cache the authentication information of the database.
+  address: 127.0.0.1:6379
+  password: ''
+  # This controls the size of the connection pool started by redis.
+  pool_size: 100
