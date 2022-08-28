@@ -24,12 +24,14 @@ func SubmitLoginData(db data.Database) gin.HandlerFunc {
 			Email:    email,
 			Password: password,
 		}
+
 		ok, err := db.CheckUserAuth(user)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"pass": false, "token": nil})
 			return
 		}
+
 		if ok {
 			// Set the token and cookie for this user's successful login and redirect it.
 			key, err := generateToken(*user)
@@ -42,6 +44,7 @@ func SubmitLoginData(db data.Database) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"pass": true, "token": key})
 			return
 		}
+
 		c.JSON(http.StatusUnauthorized, gin.H{"pass": false, "token": nil})
 	}
 }

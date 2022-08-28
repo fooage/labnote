@@ -39,6 +39,7 @@ func WriteUserNote(db data.Database) gin.HandlerFunc {
 			Content: html.EscapeString(content),
 			// Escaping to prevent XSS attacks.
 		}
+
 		err := db.InsertOneNote(note)
 		if err != nil {
 			log.Println(err)

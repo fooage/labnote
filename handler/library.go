@@ -27,6 +27,7 @@ func CheckFileStatus(ch cache.Cache) gin.HandlerFunc {
 		hash := c.Query("hash")
 		name := c.Query("name")
 		path := FileStorageDirectory + "/" + hash
+
 		exist, err := checkPathExists(path)
 		if err != nil {
 			log.Println(err)
@@ -53,6 +54,7 @@ func CheckFileStatus(ch cache.Cache) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
+
 			if saved {
 				// If this file had been saved in the server will return the status.
 				c.JSON(http.StatusOK, gin.H{
@@ -86,6 +88,7 @@ func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 		name := c.PostForm("name")
 		path := FileStorageDirectory + "/" + hash
 		blob, _ := c.FormFile("file")
+
 		saved, err := ch.CheckFileUpload(hash)
 		if err != nil {
 			log.Println(err)
@@ -104,6 +107,7 @@ func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
+
 			// If there isn't a fixed path.
 			if !exist {
 				os.Mkdir(path, os.ModePerm)
@@ -129,6 +133,7 @@ func PostSingleChunk(ch cache.Cache) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
+
 			// Feedback the existing slices to the front.
 			c.JSON(http.StatusOK, gin.H{
 				"state": saved,
@@ -144,12 +149,14 @@ func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 		hash := c.Query("hash")
 		name := c.Query("name")
 		path := FileStorageDirectory + "/" + hash
+
 		exist, err := checkPathExists(path)
 		if err != nil || !exist {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
+
 		// Merge the chunks to the file.
 		chunkList, err := ch.GetChunkList(hash, name)
 		if err != nil {
@@ -174,6 +181,7 @@ func MergeTargetFile(db data.Database, ch cache.Cache) gin.HandlerFunc {
 				return
 			}
 		}
+
 		// Verify file integrity.
 		key, err := encodeFileHash(path, name)
 		if err != nil {

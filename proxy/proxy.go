@@ -43,8 +43,10 @@ func FileRequestReverse(ch cache.Cache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var target string
 		switch c.Param("path") {
+
 		case "list":
 			target = getRandomServer()
+
 		case "check":
 			location, err := ch.GetFileLocation(c.Query("hash"))
 			if err == redis.Nil {
@@ -55,6 +57,7 @@ func FileRequestReverse(ch cache.Cache) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{})
 				return
 			}
+
 		case "download", "merge":
 			// TODO: To code the p2p file system and change "download" action
 			//  to the random. It is very difficult to complete a distributed
@@ -70,6 +73,7 @@ func FileRequestReverse(ch cache.Cache) gin.HandlerFunc {
 				return
 			}
 		}
+
 		if target != "" {
 			// Target Address is not nil, reverse the requeset.
 			director := func(request *http.Request) {
@@ -88,6 +92,7 @@ func FileRequestReverse(ch cache.Cache) gin.HandlerFunc {
 func UploadRequestReverse(ch cache.Cache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var target string
+
 		location, err := ch.GetFileLocation(c.Query("hash"))
 		if err == redis.Nil {
 			c.JSON(http.StatusBadRequest, gin.H{})
@@ -98,6 +103,7 @@ func UploadRequestReverse(ch cache.Cache) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
+
 		if target != "" {
 			// Target Address is not nil, reverse the requeset.
 			director := func(request *http.Request) {

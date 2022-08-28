@@ -32,6 +32,7 @@ func DataAuthority(db data.Database) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		claims, err := parseToken(key)
 		if err != nil {
 			log.Println(err)
@@ -39,6 +40,7 @@ func DataAuthority(db data.Database) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		ok, err := db.CheckUserAuth(&claims.User)
 		if err != nil {
 			log.Println(err)
@@ -46,6 +48,7 @@ func DataAuthority(db data.Database) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{})
 			c.Abort()

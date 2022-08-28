@@ -20,16 +20,19 @@ func InitRouter(db data.Database, ch cache.Cache) *gin.Engine {
 	router := gin.Default()
 	router.LoadHTMLGlob("../../views/html/*")
 	router.StaticFS("../../views", http.Dir("../../views"))
+
 	// Set the root redirect function to the real home page.
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/journal")
 	})
+
 	// These are handler functions of this login page.
 	login := router.Group("/login")
 	{
 		login.GET("/", handler.GetLoginPage())
 		login.POST("/submit", handler.SubmitLoginData(db))
 	}
+
 	// These are handler functions of this journal page.
 	journal := router.Group("/journal")
 	{
@@ -37,6 +40,7 @@ func InitRouter(db data.Database, ch cache.Cache) *gin.Engine {
 		journal.GET("/list", handler.DataAuthority(db), handler.GetNotesList(db))
 		journal.POST("/write", handler.DataAuthority(db), handler.WriteUserNote(db))
 	}
+
 	// These are handler functions of this library page.
 	library := router.Group("/library")
 	{
@@ -47,6 +51,7 @@ func InitRouter(db data.Database, ch cache.Cache) *gin.Engine {
 		library.POST("/upload", handler.DataAuthority(db), handler.PostSingleChunk(ch))
 		library.GET("/merge", handler.DataAuthority(db), handler.MergeTargetFile(db, ch))
 	}
+
 	return router
 }
 
@@ -54,21 +59,25 @@ func InitRouter(db data.Database, ch cache.Cache) *gin.Engine {
 // multi-machine deployment through the proxy.
 func InitProxy(ch cache.Cache) *gin.Engine {
 	router := gin.Default()
+
 	// Set the root redirect function to the real home page.
 	router.LoadHTMLGlob("../../views/html/*")
 	router.StaticFS("../../views", http.Dir("../../views"))
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/journal")
 	})
+
 	// Recevie the heartbeat of servers.
 	rand.Seed(time.Now().UnixNano())
 	router.POST("/heartbeat", proxy.ReceiveHeartbeat())
+
 	// These are proxy functions of this login page.
 	login := router.Group("/login")
 	{
 		login.GET("/", proxy.UniversalReverse())
 		login.POST("/submit", proxy.UniversalReverse())
 	}
+
 	// These are proxy functions of this journal page.
 	journal := router.Group("/journal")
 	{
@@ -76,6 +85,7 @@ func InitProxy(ch cache.Cache) *gin.Engine {
 		journal.GET("/list", proxy.UniversalReverse())
 		journal.POST("/write", proxy.UniversalReverse())
 	}
+
 	// These are proxy functions of this library page.
 	library := router.Group("/library")
 	{
@@ -83,5 +93,6 @@ func InitProxy(ch cache.Cache) *gin.Engine {
 		library.GET("/:path", proxy.FileRequestReverse(ch))
 		library.POST("/:path", proxy.UploadRequestReverse(ch))
 	}
+
 	return router
 }

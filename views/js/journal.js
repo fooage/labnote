@@ -58,6 +58,7 @@ function changeDateFormat(cellval) {
 
 $(document).ready(function () {
   loadAllNotes();
+
   // Determine the size of the input box according to the number of input lines.
   $('textarea')
     .each(function () {
@@ -70,6 +71,7 @@ $(document).ready(function () {
       this.style.height = 'auto';
       this.style.height = this.scrollHeight + 'px';
     });
+
   // Support the tab and enter key's use in textarea.
   $('textarea').on('keydown', function (e) {
     if (e.keyCode == 9) {
@@ -84,6 +86,7 @@ $(document).ready(function () {
       this.setSelectionRange(start + indent.length, start + selected.length);
     }
   });
+
   // Function to add log items to the whole log list.
   $('#submit').click(function () {
     let formData = $('#form-write').serialize();

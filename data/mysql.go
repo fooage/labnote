@@ -67,6 +67,7 @@ func (m *MySQL) GetAllNotes() (*[]Note, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var all = make([]Note, 0)
 	for rows.Next() {
 		var note Note
@@ -109,6 +110,7 @@ func (m *MySQL) GetAllFiles() (*[]File, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var all = make([]File, 0)
 	for rows.Next() {
 		var file File

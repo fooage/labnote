@@ -92,6 +92,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
       sumbitColor('danger');
     },
   });
+
   // if the upload is complete return directly
   if (state == true) {
     return true;
@@ -138,6 +139,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
       );
     }
   });
+
   // Use Promise to transfer file slices asynchronously and get the number of
   // file slices to determine whether to merge files.
   let received = 0;
@@ -152,6 +154,7 @@ async function postChunks(fileHash, fileName, sliceBuffer) {
     .catch(function () {
       sumbitColor('danger');
     });
+
   // alert the server to merge the file
   if (received == sliceBuffer.length && state == false) {
     $.ajax({
@@ -193,6 +196,7 @@ function uploadFile() {
     sliceBuffer.push(blobPart);
   }
   let hash = window.localStorage.getItem(file.name + ' ' + file.size);
+
   // If there is already a calculated Hash, then transfer it directly
   if (hash != null) {
     (async () => {
@@ -215,6 +219,7 @@ function uploadFile() {
     requestAnimationFrame(() => {
       updateProgress(100, 100);
     });
+
     const fileReader = new FileReader();
     const spark = new SparkMD5.ArrayBuffer();
     let index = 0;

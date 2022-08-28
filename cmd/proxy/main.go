@@ -23,6 +23,7 @@ func main() {
 		cache.ConnectCache(ch)
 		defer cache.DisconnectCache(ch)
 	}
+
 	gin.SetMode(gin.DebugMode)
 	server := router.InitProxy(ch)
 	// Begin to proxy the request from users.

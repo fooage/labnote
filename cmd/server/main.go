@@ -31,6 +31,7 @@ func main() {
 		cache.ConnectCache(ch)
 		defer cache.DisconnectCache(ch)
 	}
+
 	// Start sending requests to proxy server, if the proxy server option is
 	// checked. If there is no proxy server, server can be run independently.
 	proxy.SendHeartbeat(handler.HostAddress + ":" + handler.ListenPort)

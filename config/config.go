@@ -19,6 +19,7 @@ func ServerConfiguration() (data.Database, cache.Cache, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
 	// Read in database and cache setting information. Settings, such as cookie
 	// expiration time, scope, url prefix, token settings.
 	handler.HostAddress = viper.GetString("server.handler.host_address")
@@ -30,10 +31,12 @@ func ServerConfiguration() (data.Database, cache.Cache, error) {
 	handler.TokenExpireDuration = time.Second * time.Duration(viper.GetInt64("server.token.token_duration"))
 	handler.EncryptionKey = viper.GetString("server.token.encryption_key")
 	handler.TokenIssuer = viper.GetString("server.token.token_issuer")
+
 	// The Settings of proxy server's connect information.
 	proxy.ProxyAddress = viper.GetString("server.proxy.proxy_address")
 	proxy.UseProxy = viper.GetBool("server.proxy.use_proxy")
 	proxy.Timeout = time.Second * time.Duration(viper.GetInt64("server.proxy.timeout"))
+
 	// Generate database and cache database objects and return.
 	var db data.Database
 	var ch cache.Cache
@@ -58,11 +61,13 @@ func ProxyConfiguration() (data.Database, cache.Cache, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
 	// Read in database and cache setting information. Reverse proxy server configuration.
 	proxy.HostAddress = viper.GetString("proxy.universal.host_address")
 	proxy.ListenPort = viper.GetString("proxy.universal.listen_port")
 	proxy.Timeout = time.Second * time.Duration(viper.GetInt64("proxy.registry.timeout"))
 	proxy.HttpVersion = viper.GetString("proxy.universal.http_version")
+
 	// Generate database and cache database objects and return.
 	var db data.Database
 	var ch cache.Cache

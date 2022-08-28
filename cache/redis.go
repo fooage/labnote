@@ -16,6 +16,7 @@ type Redis struct {
 	// A cache database of the file transfer status, it will be deleted after
 	//  the file transfer is complete.
 	state *redis.Client
+
 	// A cache server that permanently stores the storage location of files.
 	// TODO: The cache server will synchronize with the relational database in
 	// the future. But I don't know if this is necessary.
@@ -56,6 +57,7 @@ func (r *Redis) InitConnection() error {
 		DB:       2,
 		PoolSize: r.size,
 	})
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := r.chunk.Ping(ctx).Result()
@@ -121,7 +123,7 @@ func (r *Redis) GetChunkList(hash string, name string) (*[]Chunk, error) {
 	return &chunks, nil
 }
 
-//	RemoveAllRecords is a function which run after merge or error.
+// RemoveAllRecords is a function which run after merge or error.
 func (r *Redis) RemoveAllRecords(hash string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
